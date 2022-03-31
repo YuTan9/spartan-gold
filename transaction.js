@@ -32,7 +32,7 @@ module.exports = class Transaction {
    * @param [obj.fee] - The amount of gold offered as a transaction fee.
    * @param [obj.data] - Object with any additional properties desired for the transaction.
    */
-  constructor({from, nonce, pubKey, sig, outputs, fee=0, data={}}) {
+  constructor({from, nonce, pubKey, sig = [], outputs, fee=0, data={}}) {
     this.from = from;
     this.nonce = nonce;
     this.pubKey = pubKey;
@@ -68,19 +68,26 @@ module.exports = class Transaction {
    *    public key included in the transaction.
    */
   sign(privKey) {
-    this.sig = utils.sign(privKey, this.id);
+    this.sig.push(utils.sign(privKey, this.id));
   }
 
   /**
-   * Determines whether the signature of the transaction is valid
-   * and if the from address matches the public key.
+   * Determines whether the signatures of the transaction are valid
+   * and if the from addresses match the corresponding public keys.
    * 
    * @returns {Boolean} - Validity of the signature and from address.
    */
-  validSignature() {
-    return this.sig !== undefined &&
-        utils.addressMatchesKey(this.from, this.pubKey) &&
-        utils.verifySignature(this.pubKey, this.id, this.sig);
+   validSignature() {
+    if(this.from.length === this.sig.length && this.sig.length === this.pubKey.length){
+      for(let i = 0; i < this.from.length; i++){
+        if(!utils.addressMatchesKey(this.from[i], this.pubKey[i])) return false;
+        if(!this.sig[i]) return false;
+        if(!utils.verifySignature(this.pubKey[i], this.id, this.sig[i])) return false;
+      }
+      return true;
+    }else{
+      return false;
+    }
   }
 
   /**
@@ -92,7 +99,22 @@ module.exports = class Transaction {
    *    according to the balances from the specified block.
    */
   sufficientFunds(block) {
-    return this.totalOutput() <= block.balances.get(this.from);
+    return this.totalOutput() <= this.totalInput(block);
+  }
+
+  /**
+   * Sums up the total of the UTXOs used as input for this transaction,
+   * according to the specified block.
+   * 
+   * @param {Block} block - Block used to look up UTXO balances.
+   */
+   totalInput(block) {
+    // Look up the balance for all address in the 'from' field of 'this'.
+    let res = 0;
+    this.from.forEach((addr)=>{
+      if(block.balances.has(addr)) res += block.balances.get(addr);
+    });
+    return res;
   }
 
   /**

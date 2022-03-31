@@ -2,6 +2,7 @@
 
 let Blockchain = require('./blockchain.js');
 let Client = require('./client.js');
+const UtxoMixin = require("./utxo-mixin.js");
 
 /**
  * Miners are clients, but they also mine blocks looking for "proofs".
@@ -29,6 +30,10 @@ module.exports = class Miner extends Client {
 
     // Set of transactions to be added to the next block.
     this.transactions = new Set();
+
+    Object.assign(this, UtxoMixin);
+
+    this.setupWallet();
   }
 
   /**
@@ -44,11 +49,27 @@ module.exports = class Miner extends Client {
   }
 
   /**
+   * Gets balance of miner from last confirmed block,
+   * not counting any pending ingoing or outgoing transactions.
+   * 
+   * @returns {number} -- Total available gold as of the last confirmed block.
+   */
+  get confirmedBalance() {
+    return this.getConfirmedBalance();
+  }
+
+  /**
    * Sets up the miner to start searching for a new block.
    * 
    * @param {Set} [txSet] - Transactions the miner has that have not been accepted yet.
    */
   startNewSearch(txSet=new Set()) {
+    if(this.lastBlock.rewardAddr === this.address){ 
+      this.address = this.createAddress();
+    }else if(this.lastBlock.balances.get(this.address) || 0 > 0){
+      this.address = this.createAddress();
+    }
+    
     this.currentBlock = Blockchain.makeBlock(this.address, this.lastBlock);
 
     // Merging txSet into the transaction queue.

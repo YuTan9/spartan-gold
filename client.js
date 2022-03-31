@@ -6,6 +6,8 @@ let Blockchain = require('./blockchain.js');
 
 let utils = require('./utils.js');
 
+let UtxoMixin = require('./utxo-mixin.js');
+
 /**
  * A client has a public/private keypair and an address.
  * It can send and receive messages on the Blockchain network.
@@ -65,6 +67,10 @@ module.exports = class Client extends EventEmitter {
     // Setting up listeners to receive messages from other clients.
     this.on(Blockchain.PROOF_FOUND, this.receiveBlock);
     this.on(Blockchain.MISSING_BLOCK, this.provideMissingBlock);
+
+    Object.assign(this, UtxoMixin);
+    
+    this.setupWallet();
   }
 
   /**
@@ -96,7 +102,7 @@ module.exports = class Client extends EventEmitter {
    * transactions in newer blocks may roll back.
    */
   get confirmedBalance() {
-    return this.lastConfirmedBlock.balanceOf(this.address);
+    return this.getConfirmedBalance();
   }
 
   /**
