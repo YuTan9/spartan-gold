@@ -1,5 +1,4 @@
 "use strict";
-
 /**
  * Simulates a network by using events to enable simpler testing.
  */
@@ -63,8 +62,10 @@ module.exports = class FakeNet {
     if (typeof o !== 'object') throw new Error(`Expecting an object, but got a ${typeof o}`);
 
     // Serializing/deserializing the object to prevent cheating in single threaded mode.
-    let o2 = JSON.parse(JSON.stringify(o));
-
+    // since there are merkle trees in the blocks, this serialize deserialize method will fail
+    // let o2 = JSON.parse(JSON.stringify(o));
+    let o2 = Object.assign({}, o);
+    
     const client = this.clients.get(address);
 
     let delay = Math.floor(Math.random() * this.messageDelayMax);

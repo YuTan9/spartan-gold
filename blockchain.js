@@ -1,5 +1,7 @@
 "use strict";
 
+const MerkleTree = require('./merkle-tree');
+
 const BigInteger = require('jsbn').BigInteger;
 
 // Network message constants
@@ -24,6 +26,8 @@ const DEFAULT_TX_FEE = 1;
 // Note that the genesis block is always considered to be confirmed.
 const CONFIRMED_DEPTH = 6;
 
+const BLOCKSIZE = 2 ** 15;
+// about 2 transactions per block
 
 /**
  * The Blockchain class tracks configuration information and settings for the blockchain,
@@ -43,7 +47,7 @@ module.exports = class Blockchain {
   static get DEFAULT_TX_FEE() { return Blockchain.cfg.defaultTxFee; }
   static get CONFIRMED_DEPTH() { return Blockchain.cfg.confirmedDepth; }
 
-
+  static get BLOCKSIZE(){return BLOCKSIZE;}
   /**
    * Produces a new genesis block, giving the specified clients
    * the specified amount of starting gold.  Either clientBalanceMap
@@ -139,10 +143,11 @@ module.exports = class Blockchain {
       b.proof = o.proof;
       b.rewardAddr = o.rewardAddr;
       // Likewise, transactions need to be recreated and restored in a map.
-      b.transactions = new Map();
-      if (o.transactions) o.transactions.forEach(([txID,txJson]) => {
+      b.transactions = new MerkleTree();
+      if (o.transactions) o.transactions.getAllLeaves().forEach(txJson => {
         let tx = new Blockchain.cfg.transactionClass(txJson);
-        b.transactions.set(txID, tx);
+        // console.log(tx);
+        b.transactions.addTransaction(tx);
       });
     }
 

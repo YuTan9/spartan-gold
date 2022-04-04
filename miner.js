@@ -2,7 +2,9 @@
 
 let Blockchain = require('./blockchain.js');
 let Client = require('./client.js');
+let MerkleTree = require('./merkle-tree.js');
 const UtxoMixin = require("./utxo-mixin.js");
+const utils = require('./utils.js');
 
 /**
  * Miners are clients, but they also mine blocks looking for "proofs".
@@ -30,6 +32,8 @@ module.exports = class Miner extends Client {
 
     // Set of transactions to be added to the next block.
     this.transactions = new Set();
+    // Store transactions in a merkle tree
+    // this.transactions = 
 
     Object.assign(this, UtxoMixin);
 
@@ -70,7 +74,7 @@ module.exports = class Miner extends Client {
       this.address = this.createAddress();
     }
     
-    this.currentBlock = Blockchain.makeBlock(this.address, this.lastBlock);
+    let tmpBlock = Blockchain.makeBlock(this.address, this.lastBlock);
 
     // Merging txSet into the transaction queue.
     // These transactions may include transactions not already included
@@ -79,12 +83,47 @@ module.exports = class Miner extends Client {
 
     // Add queued-up transactions to block.
     this.transactions.forEach((tx) => {
-      this.currentBlock.addTransaction(tx, this);
+      tmpBlock.addTransaction(tx, this);
     });
-    this.transactions.clear();
-
+    if(utils.approxSize(tmpBlock) > Blockchain.BLOCKSIZE){
+      // console.log('BLOCKSIZE exceeded.');
+      tmpBlock.transactions = new MerkleTree();
+      let sortedTrx= [];
+      this.transactions.forEach((tx)=>{
+        let i = 0;
+        for(;i<sortedTrx.length; i++){
+          if(sortedTrx[i].fee < tx.fee){break;}
+        }
+        if(sortedTrx.length > 0){
+          if(sortedTrx[sortedTrx.length - 1].fee > tx.fee){i++;}
+        }
+        sortedTrx.splice(i, 0, tx);
+      });
+      let counter = 0;
+      while(utils.approxSize(tmpBlock) < Blockchain.BLOCKSIZE && counter < sortedTrx.length){
+        tmpBlock.addTransaction(sortedTrx[counter], this);
+        counter ++;
+      }
+      let inLaterBlocks = sortedTrx.slice(counter);
+      this.currentBlock = Blockchain.makeBlock(this.address, this.lastBlock);
+      sortedTrx.slice(0, counter).forEach(tx=>{
+        this.currentBlock.addTransaction(tx, this);
+      });
+      this.transactions.clear();
+      inLaterBlocks.forEach((tx) => this.addTransaction(tx));
+      this.currentBlock.proof = 0;
+      // this.transactions.forEach(tx => console.log(tx));
+      // setTimeout(this.startNewSearch(), 1000);
+    }else{
+      this.currentBlock = Blockchain.makeBlock(this.address, this.lastBlock);
+      this.transactions.forEach((tx) => {
+        this.currentBlock.addTransaction(tx, this);
+      });
+      this.transactions.clear();
+      this.currentBlock.proof = 0;
+    }
+    // this.transactions.clear();
     // Start looking for a proof at 0.
-    this.currentBlock.proof = 0;
   }
 
   /**
@@ -101,6 +140,8 @@ module.exports = class Miner extends Client {
     while (this.currentBlock.proof < pausePoint) {
       if (this.currentBlock.hasValidProof()) {
         this.log(`found proof for block ${this.currentBlock.chainLength}: ${this.currentBlock.proof}`);
+        // console.log(`Found proof for block ${this.currentBlock.chainLength} with size ${utils.approxSize(this.currentBlock)}`);
+        // console.log(this.currentBlock);
         this.announceProof();
         // Note: calling receiveBlock triggers a new search.
         this.receiveBlock(this.currentBlock);
@@ -163,15 +204,15 @@ module.exports = class Miner extends Client {
     // The new block may be ahead of the old block.  We roll back the new chain
     // to the matching height, collecting any transactions.
     while (nb.chainLength > cb.chainLength) {
-      nb.transactions.forEach((tx) => nbTxs.add(tx));
+      nb.transactions.getAllLeaves().forEach((tx) => nbTxs.add(tx));
       nb = this.blocks.get(nb.prevBlockHash);
     }
 
     // Step back in sync until we hit the common ancestor.
     while (cb && cb.id !== nb.id) {
       // Store any transactions in the two chains.
-      cb.transactions.forEach((tx) => cbTxs.add(tx));
-      nb.transactions.forEach((tx) => nbTxs.add(tx));
+      cb.transactions.getAllLeaves().forEach((tx) => cbTxs.add(tx));
+      nb.transactions.getAllLeaves().forEach((tx) => nbTxs.add(tx));
 
       cb = this.blocks.get(cb.prevBlockHash);
       nb = this.blocks.get(nb.prevBlockHash);

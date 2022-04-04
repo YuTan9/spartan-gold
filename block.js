@@ -4,7 +4,10 @@ const BigInteger = require('jsbn').BigInteger;
 
 const Blockchain = require('./blockchain.js');
 
+const MerkleTree = require('./merkle-tree.js');
+
 const utils = require('./utils.js');
+
 
 /**
  * A block is a collection of transactions, with a hash connecting it
@@ -38,8 +41,8 @@ module.exports = class Block {
       this.balances.set(prevBlock.rewardAddr, winnerBalance + prevBlock.totalRewards());
     }
 
-    // Storing transactions in a Map to preserve key order.
-    this.transactions = new Map();
+    // Storing transactions in a merkle tree to preserve key order.
+    this.transactions = new MerkleTree();
 
     // Adding toJSON methods for transactions and balances, which help with
     // serialization.
@@ -108,7 +111,8 @@ module.exports = class Block {
       o.balances = Array.from(this.balances.entries());
     } else {
       // Other blocks must specify transactions and proof details.
-      o.transactions = Array.from(this.transactions.entries());
+      // o.transactions = Array.from(this.transactions.entries());
+      o.merkleRoot = this.transactions.data;
       o.prevBlockHash = this.prevBlockHash;
       o.proof = this.proof;
       o.rewardAddr = this.rewardAddr;
@@ -171,18 +175,17 @@ module.exports = class Block {
     // the balances of the accounts receiving the gold.
     //
     // If everything succeeds, return 'true'
-
-    this.transactions.set(tx.id, tx);
+    this.transactions.addTransaction(tx);
     tx.from.forEach(addr=>{
-      console.log(`\n**Deleting ${addr}\n`);
+      // console.log(`\n**Deleting ${addr}\n`);
       this.balances.delete(addr);
     });
     tx.outputs.forEach(({amount, address})=>{
-      console.log(`***Giving ${amount} to ${address}`);
+      // console.log(`***Giving ${amount} to ${address}`);
       let oldBalance = this.balanceOf(address);
       this.balances.set(address, amount + oldBalance);
     });
-    console.log();
+    // console.log();
     return true;
   }
 
@@ -207,13 +210,12 @@ module.exports = class Block {
     if (prevBlock.rewardAddr) this.balances.set(prevBlock.rewardAddr, winnerBalance + prevBlock.totalRewards());
 
     // Re-adding all transactions.
-    let txs = this.transactions;
-    this.transactions = new Map();
-    for (let tx of txs.values()) {
+    let txs = this.transactions.getAllLeaves();
+    this.transactions = new MerkleTree();
+    for (let tx of txs) {
       let success = this.addTransaction(tx);
       if (!success) return false;
     }
-
     return true;
   }
 
@@ -240,9 +242,11 @@ module.exports = class Block {
    * 
    */
   totalRewards() {
-    return [...this.transactions].reduce(
-      (reward, [, tx]) => reward + tx.fee,
-      this.coinbaseReward);
+    let r = this.coinbaseReward;
+    for(let tx of this.transactions.getAllLeaves()){
+      r += tx.fee;
+    }
+    return r;
   }
 
   /**
@@ -255,6 +259,6 @@ module.exports = class Block {
    * @returns {boolean} - True if the transaction is contained in this block.
    */
   contains(tx) {
-    return this.transactions.has(tx.id);
+    return !!this.transactions.get(tx.id);
   }
 };

@@ -67,7 +67,7 @@ module.exports = class Client extends EventEmitter {
     // Setting up listeners to receive messages from other clients.
     this.on(Blockchain.PROOF_FOUND, this.receiveBlock);
     this.on(Blockchain.MISSING_BLOCK, this.provideMissingBlock);
-
+    
     Object.assign(this, UtxoMixin);
     
     this.setupWallet();
@@ -102,7 +102,7 @@ module.exports = class Client extends EventEmitter {
    * transactions in newer blocks may roll back.
    */
   get confirmedBalance() {
-    return this.getConfirmedBalance();
+    return this.getConfirmedBalance(); //in utxo mixin
   }
 
   /**
@@ -116,7 +116,6 @@ module.exports = class Client extends EventEmitter {
     this.pendingOutgoingTransactions.forEach((tx) => {
       pendingSpent += tx.totalOutput();
     });
-
     return this.confirmedBalance - pendingSpent;
   }
 
@@ -196,19 +195,18 @@ module.exports = class Client extends EventEmitter {
    * 
    * @returns {Block | null} The block with rerun transactions, or null for an invalid block.
    */
-  receiveBlock(block) {
+   receiveBlock(block) {
     // If the block is a string, then deserialize it.
     block = Blockchain.deserializeBlock(block);
-
     // Ignore the block if it has been received previously.
-    if (this.blocks.has(block.id)) return null;
-
+    if (this.blocks.has(block.id)){
+      return null;
+    }
     // First, make sure that the block has a valid proof. 
     if (!block.hasValidProof() && !block.isGenesisBlock()) {
       this.log(`Block ${block.id} does not have a valid proof.`);
       return null;
     }
-
     // Make sure that we have the previous blocks, unless it is the genesis block.
     // If we don't have the previous blocks, request the missing blocks and exit.
     let prevBlock = this.blocks.get(block.prevBlockHash);
@@ -227,19 +225,19 @@ module.exports = class Client extends EventEmitter {
       return null;
     }
 
-    if (!block.isGenesisBlock()) {
-      // Verify the block, and store it if everything looks good.
-      // This code will trigger an exception if there are any invalid transactions.
-      let success = block.rerun(prevBlock);
-      if (!success) return null;
+    if (!block.isGenesisBlock()) {if (!block.rerun(prevBlock)){
+        console.log('rerun failed');
+        return null;
+      }
     }
-
     // Storing the block.
     this.blocks.set(block.id, block);
+    
 
     // If it is a better block than the client currently has, set that
     // as the new currentBlock, and update the lastConfirmedBlock.
     if (this.lastBlock.chainLength < block.chainLength) {
+      // this.log(`setting last confirmed for ${block.id}`);
       this.lastBlock = block;
       this.setLastConfirmed();
     }
@@ -253,7 +251,6 @@ module.exports = class Client extends EventEmitter {
       this.log(`Processing unstuck block ${b.id}`);
       this.receiveBlock(b);
     });
-
     return block;
   }
 

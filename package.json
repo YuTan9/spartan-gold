@@ -24,7 +24,9 @@
   "dependencies": {
     "chai": "^4.2.0",
     "jsbn": "^1.1.0",
-    "mocha": "^5.2.0"
+    "just-clone": "^5.0.1",
+    "mocha": "^5.2.0",
+    "object-sizeof": "^1.6.3"
   },
   "devDependencies": {
     "eslint": "^6.8.0",

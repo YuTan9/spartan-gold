@@ -111,17 +111,13 @@ module.exports = {
     // Once the transaction is created, sign it with all private keys for the UTXOs used.
     // The order that you call the 'sign' method must match the order of the from and pubKey fields.
 
-
-    //
-    // **YOUR CODE HERE**
-    //
     let totalGoldNeeded = 0;
     outputs.forEach(({amount, address})=>{
       totalGoldNeeded += amount;
     });
     totalGoldNeeded += fee;
     if(this.availableGold < totalGoldNeeded){
-      throw new Error(`${this.name} don't have enough gold.`);
+      throw new Error(`${this.name} doesn't have enough gold.`);
     }
     let gathered_gold = 0;
     let gathered_utxo = [];
@@ -142,7 +138,7 @@ module.exports = {
     }
 
     if(gathered_gold > totalGoldNeeded){
-      console.log(`***Need to make ${gathered_gold-totalGoldNeeded} change, with ${gathered_gold} in and ${totalGoldNeeded} out.\n`);
+      // console.log(`***Need to make ${gathered_gold-totalGoldNeeded} change, with ${gathered_gold} in and ${totalGoldNeeded} out.\n`);
       let newAddress = this.createAddress();
       outputs.push({amount: gathered_gold-totalGoldNeeded, address: newAddress});
     }

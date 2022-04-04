@@ -52,3 +52,33 @@ exports.calcAddress = function(key) {
 exports.addressMatchesKey = function(addr, pubKey) {
   return addr === exports.calcAddress(pubKey);
 };
+
+exports.approxSize = function(object) {
+  var stack = [ object ];
+  var bytes = 0;
+  while ( stack.length ) {
+      var value = stack.pop();
+      if ( typeof value === 'boolean' ) {
+          bytes += 4;
+      }
+      else if ( typeof value === 'string' ) {
+          bytes += value.length * 2;
+      }
+      else if ( typeof value === 'number' ) {
+          bytes += 8;
+      }
+      else if( typeof value === 'object'){
+          try {
+              for( let i in value ) {
+                  stack.push( value[ i ] );
+              }
+          } catch (error) {}
+          try {
+              for(let i of value){
+                  stack.push(i);
+              }
+          } catch (error) {}
+      }
+  }
+  return bytes;
+};
