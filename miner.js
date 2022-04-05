@@ -51,7 +51,11 @@ module.exports = class Miner extends Client {
 
     setTimeout(() => this.emit(Blockchain.START_MINING), 0);
   }
-
+  
+  activateDebug(){
+    this.debug = true;
+  }
+  
   /**
    * Gets balance of miner from last confirmed block,
    * not counting any pending ingoing or outgoing transactions.
@@ -86,7 +90,7 @@ module.exports = class Miner extends Client {
       tmpBlock.addTransaction(tx, this);
     });
     if(utils.approxSize(tmpBlock) > Blockchain.BLOCKSIZE){
-      // console.log('BLOCKSIZE exceeded.');
+      if(this.debug){console.log('BLOCKSIZE exceeded.');}
       tmpBlock.transactions = new MerkleTree();
       let sortedTrx= [];
       this.transactions.forEach((tx)=>{

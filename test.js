@@ -7,7 +7,7 @@ const Client = require('./client.js');
 const Miner = require('./miner.js');
 const Transaction = require('./transaction.js');
 const utils = require('./utils.js');
-
+const debug = true;
 
 const Tree = require('./merkle-tree.js');
 // let tree = new Tree();
@@ -51,14 +51,16 @@ let charlie = new Client({name: "Charlie", net: fakeNet});
 // Miners
 let minnie = new Miner({name: "Minnie", net: fakeNet});
 let mickey = new Miner({name: "Mickey", net: fakeNet});
-mickey.log = function(){};
-minnie.log = function(){};
+if(!debug){
+  mickey.log = function(){};
+  minnie.log = function(){};
+}
 // Creating genesis block
 let genesis = Blockchain.makeGenesis({
   blockClass: Block,
   transactionClass: Transaction,
   clientBalanceMap: new Map([
-    [alice,   100000],
+    [alice,   10000],
     [bob,     10000],
     [charlie, 50000],
     [minnie,  200],
@@ -75,83 +77,96 @@ fakeNet.register(alice, bob, charlie, minnie, mickey);
 
 minnie.initialize();
 mickey.initialize();
+if(debug){
+  mickey.activateDebug();
+  minnie.activateDebug();
+}
+function randAddr(user){
+  // let addrA = alice.createAddress();
+  // let addrB = bob.createAddress();
+  // let addrC = charlie.createAddress();
+  // let addrMk = mickey.createAddress();
+  // let addrMn = minnie.createAddress();
+  let clients = [];
+  fakeNet.clients.forEach(client=>{
+    if(client !== user){
+      clients.push(client);
+    }
+  });
+  let selected = Math.floor(Math.random() * clients.length);
+  return [clients[selected].createAddress(), clients[selected].name];
+}
 
-let addr = bob.createAddress();
-let addrA = alice.createAddress();
-let addrC = charlie.createAddress();
-
-setTimeout(()=>{}, 3000);
-
+let record = "";
 // Alice transfers some money to Bob.
+
+
+const interval = setInterval(() =>{
+  let [target, name] = randAddr(alice);
+  if(Math.random() < 0.5){
+    try {
+      alice.postTransaction([{amount: 100, address: target}]);
+      let time = new Date().toLocaleTimeString();
+      record += `[${time}]: alice posted transaction of 100 to ${name}\n`;
+    } catch (error) {
+      let time = new Date().toLocaleTimeString();
+      record += `[${time}]: alice posted transaction of 100 to ${name}\n`;
+    }
+  }
+  if(Math.random() < 0.5){
+    let [target, name] = randAddr(bob);
+    try {
+      bob.postTransaction([{amount: 100, address: target}]);
+      let time = new Date().toLocaleTimeString();
+      record += `[${time}]: bob posted transaction of 100 to ${name}\n`;
+    } catch (error) {
+      let time = new Date().toLocaleTimeString();
+      record += `[${time}]: bob failed transaction of 100 to ${name}\n`;
+    }
+  }
+  if(Math.random() < 0.5){
+    let [target, name] = randAddr(charlie);
+    try {
+      charlie.postTransaction([{amount: 100, address: target}]);
+      let time = new Date().toLocaleTimeString();
+      record += `[${time}]: charlie posted transaction of 100 to ${name}\n`;
+    } catch (error) {
+      let time = new Date().toLocaleTimeString();
+      record += `[${time}]: charlie failed transaction of 100 to ${name}\n`;
+    }
+  }
+  if(Math.random() < 0.5){
+    let [target, name] = randAddr(mickey);
+    try {
+      mickey.postTransaction([{amount: 100, address: target}]);
+      let time = new Date().toLocaleTimeString();
+      record += `[${time}]: mickey posted transaction of 100 to ${name}\n`;
+    } catch (error) {
+      let time = new Date().toLocaleTimeString();
+      record += `[${time}]: mickey failed transaction of 100 to ${name}\n`;
+    }
+  }
+  if(Math.random() < 0.5){
+    let [target, name] = randAddr(minnie);
+    try {
+      minnie.postTransaction([{amount: 100, address: target}]);
+      let time = new Date().toLocaleTimeString();
+      record += `[${time}]: minnie posted transaction of 100 to ${name}\n`;
+    } catch (error) {
+      let time = new Date().toLocaleTimeString();
+      record += `[${time}]: minnie failed transaction of 100 to ${name}\n`;
+    }
+  }
+}, 1000);
+
+
 setTimeout(() => {
-  alice.postTransaction([{ amount: 100, address: addr }], 10);
-  mickey.postTransaction([{ amount: 3, address: addr }]);
-  mickey.postTransaction([{ amount: 3, address: addrA }]);
-  mickey.postTransaction([{ amount: 3, address: addrC }]);
-  mickey.postTransaction([{ amount: 3, address: addr }]);
-  mickey.postTransaction([{ amount: 3, address: addrA }]);
-  mickey.postTransaction([{ amount: 3, address: addrC }]);
-  minnie.postTransaction([{ amount: 3, address: addr }]);
-  minnie.postTransaction([{ amount: 3, address: addrA }]);
-  minnie.postTransaction([{ amount: 3, address: addrC }]);
-  minnie.postTransaction([{ amount: 3, address: addr }]);
-  minnie.postTransaction([{ amount: 3, address: addrA }]);
-  minnie.postTransaction([{ amount: 3, address: addrC }]);
+  clearInterval(interval);
 }, 6000);
 
-// setTimeout(() => {
-//   showBalances();
-//   addr = bob.createAddress();
-//   addrA = alice.createAddress();
-//   addrC = charlie.createAddress();
-//   alice.postTransaction([{ amount: 100, address: addr }]);
-//   mickey.postTransaction([{ amount: 3, address: addr }]);
-//   mickey.postTransaction([{ amount: 3, address: addrA }]);
-//   mickey.postTransaction([{ amount: 3, address: addrC }]);
-// }, 20000);
-
-
-// setTimeout(() => {
-//   showBalances();
-//   addr = bob.createAddress();
-//   addrA = alice.createAddress();
-//   addrC = charlie.createAddress();
-//   alice.postTransaction([{ amount: 100, address: addr }]);
-//   mickey.postTransaction([{ amount: 3, address: addr }]);
-//   mickey.postTransaction([{ amount: 3, address: addrA }]);
-//   mickey.postTransaction([{ amount: 3, address: addrC }]);
-// }, 30000);
-
-
-setTimeout(() => {
-  // console.log(mickey.transactions);
-  // console.log(minnie.transactions);
-  // console.log(alice.availableGold);
+setTimeout(()=>{
+  fakeNet.clients.forEach(client =>{client.cleanWallet(debug);});
   showBalances();
-  // alice.blocks.forEach(b=>{
-  //   console.log(utils.approxSize(b));
-  //   // b.transactions.getAllLeaves().forEach(leaf=>{console.log(leaf);});
-  // });
-  // console.log(mickey.transactions.size === 0);
-  // console.log(minnie.transactions.size === 0);
-  // console.log(alice.lastConfirmedBlock.transactions);
-  // console.log(mickey.lastConfirmedBlock.transactions);
-  // mickey.showBlockchain();
-  // alice.showBlockchain();
-  // mickey.showAllBalances();
-  // alice.log(alice.lastConfirmedBlock.id);
-  // mickey.blocks.forEach(o=>{
-  //   console.log(o.transactions);
-  //   // if(o.prevBlockHash === alice.lastConfirmedBlock.id){
-  //   //   console.log(o);
-  //   // }
-  // });
-  // minnie.blocks.forEach(o=>{
-  //   console.log(o.transactions);
-  //   // if(o.prevBlockHash === alice.lastConfirmedBlock.id){
-  //   //   console.log(o);
-  //   // }
-  // });
-  // console.log(alice.wallet);
+  console.log(record);
   process.exit(0);
-}, 9000);
+}, 10000);
