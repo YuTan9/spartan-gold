@@ -29,8 +29,12 @@ module.exports = class FakeNet {
     this.startTime = now;
     
     setInterval(()=>{this.updateDifficulty();}, Blockchain.TIME_BETWEEN_UPDATES); // check if should update diff every second
+    setInterval(()=>{this.debug();}, Blockchain.TIME_BETWEEN_UPDATES);
   }
 
+  debug(){
+    console.log(`***Current difficulty: ${Blockchain.cfg.powLeadingZeroes}***`);
+  }
   updateDifficulty(){
     // console.log('+---------------------------------------+');
     // console.log('| fake-net initialize update difficulty |');
@@ -56,6 +60,12 @@ module.exports = class FakeNet {
     }
   }
 
+  updateClientAddress(oldAddress, client){
+    console.log('update address');
+    console.log(`from ${oldAddress} to ${client.address}`);
+    this.clients.delete(oldAddress);
+    this.register(client);
+  }
   /**
    * Broadcasts to all clients within this.clients the message msg and payload o.
    *
@@ -63,12 +73,8 @@ module.exports = class FakeNet {
    * @param {Object} o - payload of the message
    */
   broadcast(msg, o) {
-    if(msg === Blockchain.UPDATE_DIFFICULTY){
-      // console.log('+---------------------------------------+');
-      // console.log('| fake-net initialize update difficulty |');
-      // console.log('+---------------------------------------+');
-    }
-    for (const address of this.clients.keys()) {
+    for (let address of this.clients.keys()) {
+      // console.log(address);
       this.sendMessage(address, msg, o);
     }
   }
@@ -96,7 +102,17 @@ module.exports = class FakeNet {
     let delay = Math.floor(Math.random() * this.messageDelayMax);
 
     if (Math.random() > this.chanceMessageFails) {
-      setTimeout(() => client.emit(msg, o2), delay);
+      // console.log(this.clients);
+      setTimeout(() => {
+        try {
+          client.emit(msg, o2);
+        } catch (error) {
+          console.log(this.clients.keys());
+          console.log(address);
+          throw new Error('send message fail');
+        }
+      }, delay);
+      
     }
   }
 

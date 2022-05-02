@@ -36,8 +36,8 @@ const BLOCKSIZE = 2 ** 20;
 // const DIFFICULTY_UPDATE_FREQUENCY = 100;  // update pow target per 100 block
 // const TIME_BETWEEN_UPDATES = 10 * 60 * 1000;       // 100 BLOCKS_BETWEEN_UPDATES should be produced every 10 minutes
 // const BLOCKS_BETWEEN_UPDATES = 100;
-const TIME_BETWEEN_UPDATES = 1000;
-const BLOCKS_BETWEEN_UPDATES = 3;
+const TIME_BETWEEN_UPDATES = 1000 * 3;
+const BLOCKS_BETWEEN_UPDATES = 10;
 /**
  * The Blockchain class tracks configuration information and settings for the blockchain,
  * as well as some utility methods to allow for easy extensibility.
@@ -132,12 +132,20 @@ module.exports = class Blockchain {
     return g;
   }
 
-  static updateDifficulty(by){
-    if(!!Blockchain.cfg.updateTimeStamp){
-      Blockchain.cfg.updateTimeStamp = Date.now();
+  static updateDifficulty(by, ts){
+    if(!Blockchain.cfg.updateTimeStamp){
+      console.log(`Current powLeadingZeroes: ${Blockchain.cfg.powLeadingZeroes}`);
+      console.log(`Updating to: ${by}`);
+      Blockchain.cfg.powTarget = POW_BASE_TARGET.shiftRight(by);
+      Blockchain.cfg.powLeadingZeroes = by;
+      Blockchain.cfg.updateTimeStamp = ts;
+      console.log(`Upadated powLeadingZeroes: ${Blockchain.cfg.powLeadingZeroes}`);
     }else{
-      if(Date.now() - Blockchain.cfg.updateTimeStamp < TIME_BETWEEN_UPDATES / 2){
+      if(ts - Blockchain.cfg.updateTimeStamp < TIME_BETWEEN_UPDATES){
         // just updated
+        console.log('+------------------------------------+');
+        console.log('| blockchain just updated difficulty |');
+        console.log('+------------------------------------+');
       }else{
         console.log('+-----------------------------------------+');
         console.log('| blockchain initialize update difficulty |');
@@ -146,7 +154,7 @@ module.exports = class Blockchain {
         console.log(`Updating to: ${by}`);
         Blockchain.cfg.powTarget = POW_BASE_TARGET.shiftRight(by);
         Blockchain.cfg.powLeadingZeroes = by;
-        Blockchain.cfg.updateTimeStamp = Date.now();
+        Blockchain.cfg.updateTimeStamp = ts;
         console.log(`Upadated powLeadingZeroes: ${Blockchain.cfg.powLeadingZeroes}`);
       }
     }

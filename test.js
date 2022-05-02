@@ -7,7 +7,7 @@ const Client = require('./client.js');
 const Miner = require('./miner.js');
 const Transaction = require('./transaction.js');
 const utils = require('./utils.js');
-const debug = true;
+const debug = false;
 
 const Tree = require('./merkle-tree.js');
 const { EventEmitter } = require('./client.js');
@@ -53,6 +53,9 @@ let charlie = new Client({name: "Charlie", net: fakeNet});
 let minnie = new Miner({name: "Minnie", net: fakeNet});
 let mickey = new Miner({name: "Mickey", net: fakeNet});
 if(!debug){
+  alice.log = function(){};
+  bob.log = function(){};
+  charlie.log = function(){};
   mickey.log = function(){};
   minnie.log = function(){};
 }
@@ -68,7 +71,7 @@ let genesis = Blockchain.makeGenesis({
     [mickey,  200],
   ]),
 });
-
+let startTime = genesis.timestamp;
 
 // Showing the initial balances from Alice's perspective, for no particular reason.
 // console.log("Initial balances:");
@@ -159,7 +162,9 @@ const interval = setInterval(() =>{
   }
 }, 1000);
 
-
+// Stop posting trx, set some time for the transactions to go thru
+// or else some trx would be in progress causing the final balance outputing negitive values 
+// (transaction posted, therefore balance was deducted, but the change was still pending)
 setTimeout(() => {
   clearInterval(interval);
 }, 6000);
@@ -173,5 +178,8 @@ setTimeout(()=>{
   console.log(`Minnie's balance is ${minnie.availableGold}.`);
   console.log(`Mickey's balance is ${mickey.availableGold}.`);
   console.log(record);
+  let endTime = alice.lastConfirmedBlock.timestamp;
+  console.log(`Executed for ${(endTime - startTime) / 1000} seconds.`);
+  console.log(`Produced ${alice.lastConfirmedBlock.chainLength} blocks.`);
   process.exit(0);
 }, 10000);

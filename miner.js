@@ -53,29 +53,35 @@ module.exports = class Miner extends Client {
   }
   
   updateDifficulty({now: now}){
-    console.log('+------------------------------------+');
-    console.log('| miner initialize update difficulty |');
-    console.log('+------------------------------------+');
+    this.log('+------------------------------------+');
+    this.log('| miner initialize update difficulty |');
+    this.log('+------------------------------------+');
     let lastUpdated = this.currentBlock;
     // console.log(lastUpdated);
     while(now - lastUpdated.timestamp < Blockchain.TIME_BETWEEN_UPDATES && !lastUpdated.isGenesisBlock()){
       lastUpdated = this.blocks.get(lastUpdated.prevBlockHash);
     }
-    let num_blocks = this.currentBlock.chainLength - lastUpdated.chainLength;
-    if (num_blocks > Blockchain.BLOCKS_BETWEEN_UPDATES){
-      let current_difficulty = Blockchain.powLeadingZeroes;
-      while(num_blocks > Blockchain.BLOCKS_BETWEEN_UPDATES){
+    this.log(`Current height: ${this.currentBlock.chainLength - 1}`);  // the current block is still searching for proof so not considered as a mined block
+    this.log(`Last updated height: ${lastUpdated.chainLength}`);
+    let num_blocks = this.currentBlock.chainLength - lastUpdated.chainLength - 1;
+    if (num_blocks*2 < Blockchain.BLOCKS_BETWEEN_UPDATES){
+      let current_difficulty = Blockchain.cfg.powLeadingZeroes;
+      this.log(`decrease difficulty from ${current_difficulty}`);
+      while(num_blocks < Blockchain.BLOCKS_BETWEEN_UPDATES && current_difficulty > 0){
         current_difficulty -= 1;
-        num_blocks /= 2;
-      }
-      Blockchain.updateDifficulty(current_difficulty);
-    }else if(num_blocks < Blockchain.BLOCKS_BETWEEN_UPDATES){
-      let current_difficulty = Blockchain.powLeadingZeroes;
-      while(num_blocks < Blockchain.BLOCKS_BETWEEN_UPDATES){
-        current_difficulty += 1;
         num_blocks *= 2;
       }
-      Blockchain.updateDifficulty(current_difficulty);
+      this.log(`to ${current_difficulty}`);
+      Blockchain.updateDifficulty(current_difficulty, now);
+    }else if(num_blocks > Blockchain.BLOCKS_BETWEEN_UPDATES){
+      let current_difficulty = Blockchain.cfg.powLeadingZeroes;
+      this.log(`increase difficulty from ${current_difficulty}`);
+      while(num_blocks/2 > Blockchain.BLOCKS_BETWEEN_UPDATES && current_difficulty < 64 * 4){
+        current_difficulty += 1;
+        num_blocks /= 2;
+      }
+      this.log(`to ${current_difficulty}`);
+      Blockchain.updateDifficulty(current_difficulty, now);
     }else{
       console.log("No difficulty update required!");
     }
@@ -103,9 +109,13 @@ module.exports = class Miner extends Client {
    */
   startNewSearch(txSet=new Set()) {
     if(this.lastBlock.rewardAddr === this.address){ 
+      let old_addr = this.address;
       this.address = this.createAddress();
+      this.net.updateClientAddress(old_addr, this);
     }else if(this.lastBlock.balances.get(this.address) || 0 > 0){
+      let old_addr = this.address;
       this.address = this.createAddress();
+      this.net.updateClientAddress(old_addr, this);
     }
     
     let tmpBlock = Blockchain.makeBlock(this.address, this.lastBlock);
