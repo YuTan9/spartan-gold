@@ -1,4 +1,8 @@
 "use strict";
+
+const { useProxy } = require("chai/lib/chai/config");
+let Blockchain = require("./blockchain");
+
 /**
  * Simulates a network by using events to enable simpler testing.
  */
@@ -18,12 +22,28 @@ module.exports = class FakeNet {
    * @param {number} [chanceMessageFails] - Should be in the range of 0 to 1.
    * @param {number} [messageDelay] - Time that a message may be delayed.
    */
-  constructor(chanceMessageFails=0, messageDelay=0) {
+  constructor(chanceMessageFails=0, messageDelay=0, now = Date.now()) {
     this.clients = new Map();
     this.chanceMessageFails = chanceMessageFails;
     this.messageDelayMax = messageDelay;
+    this.startTime = now;
+    
+    setInterval(()=>{this.updateDifficulty();}, Blockchain.TIME_BETWEEN_UPDATES); // check if should update diff every second
   }
 
+  updateDifficulty(){
+    // console.log('+---------------------------------------+');
+    // console.log('| fake-net initialize update difficulty |');
+    // console.log('+---------------------------------------+');
+    let now = Date.now();
+    if(now - this.startTime >= Blockchain.TIME_BETWEEN_UPDATES){
+      console.log('+---------------------------------------+');
+      console.log('| fake-net initialize update difficulty |');
+      console.log('+---------------------------------------+');
+      this.startTime = now;
+      this.broadcast(Blockchain.UPDATE_DIFFICULTY, {now: now});
+    }
+  }
   /**
    * Registers clients to the network.
    * Clients and Miners are registered by public key.
@@ -43,6 +63,11 @@ module.exports = class FakeNet {
    * @param {Object} o - payload of the message
    */
   broadcast(msg, o) {
+    if(msg === Blockchain.UPDATE_DIFFICULTY){
+      // console.log('+---------------------------------------+');
+      // console.log('| fake-net initialize update difficulty |');
+      // console.log('+---------------------------------------+');
+    }
     for (const address of this.clients.keys()) {
       this.sendMessage(address, msg, o);
     }

@@ -9,6 +9,7 @@ const MISSING_BLOCK = "MISSING_BLOCK";
 const POST_TRANSACTION = "POST_TRANSACTION";
 const PROOF_FOUND = "PROOF_FOUND";
 const START_MINING = "START_MINING";
+const UPDATE_DIFFICULTY = "UPDATE_DIFFICULTY";
 
 // Constants for mining
 const NUM_ROUNDS_MINING = 2000;
@@ -32,6 +33,11 @@ const BLOCKSIZE = 2 ** 20;
 // Although the balances (UTXO) in blocks take much space, combining the adresses and / or spending those balances are expected
 // And by those two actions, the space taken by balances would then be reduced to make space for storing transactions.
 
+// const DIFFICULTY_UPDATE_FREQUENCY = 100;  // update pow target per 100 block
+// const TIME_BETWEEN_UPDATES = 10 * 60 * 1000;       // 100 BLOCKS_BETWEEN_UPDATES should be produced every 10 minutes
+// const BLOCKS_BETWEEN_UPDATES = 100;
+const TIME_BETWEEN_UPDATES = 1000;
+const BLOCKS_BETWEEN_UPDATES = 3;
 /**
  * The Blockchain class tracks configuration information and settings for the blockchain,
  * as well as some utility methods to allow for easy extensibility.
@@ -49,7 +55,12 @@ module.exports = class Blockchain {
   static get COINBASE_AMT_ALLOWED() { return Blockchain.cfg.coinbaseAmount; }
   static get DEFAULT_TX_FEE() { return Blockchain.cfg.defaultTxFee; }
   static get CONFIRMED_DEPTH() { return Blockchain.cfg.confirmedDepth; }
+  static get UPDATE_DIFFICULTY() { return UPDATE_DIFFICULTY; }
+  // static get DIFFICULTY_UPDATE_FREQUENCY() { return DIFFICULTY_UPDATE_FREQUENCY; }
+  static get TIME_BETWEEN_UPDATES() { return TIME_BETWEEN_UPDATES; }
+  static get BLOCKS_BETWEEN_UPDATES() { return BLOCKS_BETWEEN_UPDATES; }
 
+  static get powLeadingZeroes(){ return Blockchain.cfg.powLeadingZeroes; }
   static get BLOCKSIZE(){return BLOCKSIZE;}
   /**
    * Produces a new genesis block, giving the specified clients
@@ -92,6 +103,7 @@ module.exports = class Blockchain {
     // Setting blockchain configuration
     Blockchain.cfg = { blockClass, transactionClass, coinbaseAmount, defaultTxFee, confirmedDepth };
     Blockchain.cfg.powTarget = POW_BASE_TARGET.shiftRight(powLeadingZeroes);
+    Blockchain.cfg.powLeadingZeroes = powLeadingZeroes;
     
     // If startingBalances was specified, we initialize our balances to that object.
     let balances = startingBalances || {};
@@ -120,6 +132,26 @@ module.exports = class Blockchain {
     return g;
   }
 
+  static updateDifficulty(by){
+    if(!!Blockchain.cfg.updateTimeStamp){
+      Blockchain.cfg.updateTimeStamp = Date.now();
+    }else{
+      if(Date.now() - Blockchain.cfg.updateTimeStamp < TIME_BETWEEN_UPDATES / 2){
+        // just updated
+      }else{
+        console.log('+-----------------------------------------+');
+        console.log('| blockchain initialize update difficulty |');
+        console.log('+-----------------------------------------+');
+        console.log(`Current powLeadingZeroes: ${Blockchain.cfg.powLeadingZeroes}`);
+        console.log(`Updating to: ${by}`);
+        Blockchain.cfg.powTarget = POW_BASE_TARGET.shiftRight(by);
+        Blockchain.cfg.powLeadingZeroes = by;
+        Blockchain.cfg.updateTimeStamp = Date.now();
+        console.log(`Upadated powLeadingZeroes: ${Blockchain.cfg.powLeadingZeroes}`);
+      }
+    }
+    
+  }
   /**
    * Converts a string representation of a block to a new Block instance.
    * 

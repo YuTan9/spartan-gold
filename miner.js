@@ -48,10 +48,39 @@ module.exports = class Miner extends Client {
 
     this.on(Blockchain.START_MINING, this.findProof);
     this.on(Blockchain.POST_TRANSACTION, this.addTransaction);
-
+    this.on(Blockchain.UPDATE_DIFFICULTY, this.updateDifficulty);
     setTimeout(() => this.emit(Blockchain.START_MINING), 0);
   }
   
+  updateDifficulty({now: now}){
+    console.log('+------------------------------------+');
+    console.log('| miner initialize update difficulty |');
+    console.log('+------------------------------------+');
+    let lastUpdated = this.currentBlock;
+    // console.log(lastUpdated);
+    while(now - lastUpdated.timestamp < Blockchain.TIME_BETWEEN_UPDATES && !lastUpdated.isGenesisBlock()){
+      lastUpdated = this.blocks.get(lastUpdated.prevBlockHash);
+    }
+    let num_blocks = this.currentBlock.chainLength - lastUpdated.chainLength;
+    if (num_blocks > Blockchain.BLOCKS_BETWEEN_UPDATES){
+      let current_difficulty = Blockchain.powLeadingZeroes;
+      while(num_blocks > Blockchain.BLOCKS_BETWEEN_UPDATES){
+        current_difficulty -= 1;
+        num_blocks /= 2;
+      }
+      Blockchain.updateDifficulty(current_difficulty);
+    }else if(num_blocks < Blockchain.BLOCKS_BETWEEN_UPDATES){
+      let current_difficulty = Blockchain.powLeadingZeroes;
+      while(num_blocks < Blockchain.BLOCKS_BETWEEN_UPDATES){
+        current_difficulty += 1;
+        num_blocks *= 2;
+      }
+      Blockchain.updateDifficulty(current_difficulty);
+    }else{
+      console.log("No difficulty update required!");
+    }
+  }
+
   activateDebug(){
     this.debug = true;
   }
@@ -66,6 +95,7 @@ module.exports = class Miner extends Client {
     return this.getConfirmedBalance();
   }
 
+  
   /**
    * Sets up the miner to start searching for a new block.
    * 

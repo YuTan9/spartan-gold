@@ -10,6 +10,7 @@ const utils = require('./utils.js');
 const debug = true;
 
 const Tree = require('./merkle-tree.js');
+const { EventEmitter } = require('./client.js');
 // let tree = new Tree();
 // let transactions = ['a', 'b', 'c', 'd', 'e'];
 // transactions.forEach(trx =>{
@@ -98,7 +99,6 @@ function randAddr(user){
 }
 
 let record = "";
-// Alice transfers some money to Bob.
 
 
 const interval = setInterval(() =>{
@@ -167,6 +167,11 @@ setTimeout(() => {
 setTimeout(()=>{
   fakeNet.clients.forEach(client =>{client.cleanWallet(debug);});
   showBalances();
+  console.log(`Alice's balance is ${alice.availableGold}.`);
+  console.log(`Bob's balance is ${bob.availableGold}.`);
+  console.log(`Charlie's balance is ${charlie.availableGold}.`);
+  console.log(`Minnie's balance is ${minnie.availableGold}.`);
+  console.log(`Mickey's balance is ${mickey.availableGold}.`);
   console.log(record);
   process.exit(0);
 }, 10000);
