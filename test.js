@@ -7,7 +7,7 @@ const Client = require('./client.js');
 const Miner = require('./miner.js');
 const Transaction = require('./transaction.js');
 const utils = require('./utils.js');
-const debug = false;
+const debug = true;
 
 const Tree = require('./merkle-tree.js');
 const { EventEmitter } = require('./client.js');

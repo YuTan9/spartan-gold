@@ -337,7 +337,7 @@ module.exports = class Client extends EventEmitter {
    */
   log(msg) {
     let name = this.name || this.address.substring(0,10);
-    console.log(`${name}: ${msg}`);
+    console.log(`${name}[${new Date().toLocaleTimeString()}]: ${msg}`);
   }
 
   /**

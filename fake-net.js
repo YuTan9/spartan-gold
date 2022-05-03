@@ -61,8 +61,8 @@ module.exports = class FakeNet {
   }
 
   updateClientAddress(oldAddress, client){
-    console.log('update address');
-    console.log(`from ${oldAddress} to ${client.address}`);
+    // console.log('update address');
+    // console.log(`from ${oldAddress} to ${client.address}`);
     this.clients.delete(oldAddress);
     this.register(client);
   }
