@@ -32,8 +32,8 @@ module.exports = class Miner extends Client {
 
     // Set of transactions to be added to the next block.
     this.transactions = new Set();
-    // Store transactions in a merkle tree
-    // this.transactions = 
+    // For miners, this.transactions doesn't need to be a merkle tree, coz it is just for memorizing which trx should be added to next block
+    // where the trx were stored in merkle trees in blocks
 
     Object.assign(this, UtxoMixin);
 
