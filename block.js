@@ -261,4 +261,27 @@ module.exports = class Block {
   contains(tx) {
     return !!this.transactions.get(tx.id);
   }
+
+  // print the entire blockchain (up to genesis) in <client>'s perspective
+  printBlockChain(clients){
+    let ptr = this;
+    while(!!ptr){
+      if(ptr.isGenesisBlock()){
+        console.log(`[Genesis]${ptr.id}`);
+        break;
+      }
+      console.log(ptr.id);
+      let table = [];
+      if(ptr.transactions.txs !== 0){
+        ptr.transactions.getAllLeaves().forEach((trx, _)=>{
+          trx.outputs.forEach(({amount, address}) =>{
+            table.push({trx: trx.id.slice(0, 8), from: trx.from[0], amount: amount, to: address});
+          });
+        });
+        console.log("Transactions:");
+        console.table(table);
+      }
+      ptr = clients[0].blocks.get(ptr.prevBlockHash);
+    }
+  }
 };

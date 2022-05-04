@@ -111,7 +111,6 @@ module.exports = class Miner extends Client {
     if(this.lastBlock.rewardAddr === this.address){ 
       let old_addr = this.address;
       this.address = this.createAddress();
-      this.net.updateClientAddress(old_addr, this);
     }else if(this.lastBlock.balances.get(this.address) || 0 > 0){
       let old_addr = this.address;
       this.address = this.createAddress();

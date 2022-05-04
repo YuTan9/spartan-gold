@@ -14,6 +14,10 @@ let UtxoMixin = require('./utxo-mixin.js');
  */
 module.exports = class Client extends EventEmitter {
 
+  emit(msg, o){
+    this.log(`emitting ${msg}`);
+    super.emit(msg, o);
+  }
   /**
    * The net object determines how the client communicates
    * with other entities in the system. (This approach allows us to
@@ -196,6 +200,7 @@ module.exports = class Client extends EventEmitter {
    * @returns {Block | null} The block with rerun transactions, or null for an invalid block.
    */
    receiveBlock(block) {
+    this.log(`receiving block`);
     // If the block is a string, then deserialize it.
     block = Blockchain.deserializeBlock(block);
     // Ignore the block if it has been received previously.
@@ -286,6 +291,7 @@ module.exports = class Client extends EventEmitter {
    * @param {String} msg.missing - ID of the missing block.
    */
   provideMissingBlock(msg) {
+    this.log(`provide missing block`);
     if (this.blocks.has(msg.missing)) {
       this.log(`Providing missing block ${msg.missing}`);
       let block = this.blocks.get(msg.missing);

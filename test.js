@@ -7,7 +7,7 @@ const Client = require('./client.js');
 const Miner = require('./miner.js');
 const Transaction = require('./transaction.js');
 const utils = require('./utils.js');
-const debug = true;
+const debug = false;
 
 const Tree = require('./merkle-tree.js');
 const { EventEmitter } = require('./client.js');
@@ -110,10 +110,10 @@ const interval = setInterval(() =>{
     try {
       alice.postTransaction([{amount: 100, address: target}]);
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: alice posted transaction of 100 to ${name}\n`;
+      record += `[${time}]: alice posted transaction of 100 to ${target}\n`;
     } catch (error) {
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: alice posted transaction of 100 to ${name}\n`;
+      record += `[${time}]: alice failed transaction of 100 to ${target}\n           ${error}\n`;
     }
   }
   if(Math.random() < 0.5){
@@ -121,10 +121,10 @@ const interval = setInterval(() =>{
     try {
       bob.postTransaction([{amount: 100, address: target}]);
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: bob posted transaction of 100 to ${name}\n`;
+      record += `[${time}]: bob posted transaction of 100 to ${target}\n`;
     } catch (error) {
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: bob failed transaction of 100 to ${name}\n`;
+      record += `[${time}]: bob failed transaction of 100 to ${target}\n           ${error}\n`;
     }
   }
   if(Math.random() < 0.5){
@@ -132,10 +132,10 @@ const interval = setInterval(() =>{
     try {
       charlie.postTransaction([{amount: 100, address: target}]);
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: charlie posted transaction of 100 to ${name}\n`;
+      record += `[${time}]: charlie posted transaction of 100 to ${target}\n`;
     } catch (error) {
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: charlie failed transaction of 100 to ${name}\n`;
+      record += `[${time}]: charlie failed transaction of 100 to ${target}\n           ${error}\n`;
     }
   }
   if(Math.random() < 0.5){
@@ -143,10 +143,10 @@ const interval = setInterval(() =>{
     try {
       mickey.postTransaction([{amount: 100, address: target}]);
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: mickey posted transaction of 100 to ${name}\n`;
+      record += `[${time}]: mickey posted transaction of 100 to ${target}\n`;
     } catch (error) {
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: mickey failed transaction of 100 to ${name}\n`;
+      record += `[${time}]: mickey failed transaction of 100 to ${target}\n           ${error}\n`;
     }
   }
   if(Math.random() < 0.5){
@@ -154,10 +154,10 @@ const interval = setInterval(() =>{
     try {
       minnie.postTransaction([{amount: 100, address: target}]);
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: minnie posted transaction of 100 to ${name}\n`;
+      record += `[${time}]: minnie posted transaction of 100 to ${target}\n`;
     } catch (error) {
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: minnie failed transaction of 100 to ${name}\n`;
+      record += `[${time}]: minnie failed transaction of 100 to ${target}\n           ${error}\n`;
     }
   }
 }, 1000);
@@ -170,8 +170,9 @@ setTimeout(() => {
 }, 6000);
 
 setTimeout(()=>{
+  alice.lastConfirmedBlock.printBlockChain([alice, bob, charlie, mickey, minnie]);
   fakeNet.clients.forEach(client =>{client.cleanWallet(debug);});
-  showBalances();
+  // showBalances();
   console.log(`Alice's balance is ${alice.availableGold}.`);
   console.log(`Bob's balance is ${bob.availableGold}.`);
   console.log(`Charlie's balance is ${charlie.availableGold}.`);
@@ -182,4 +183,4 @@ setTimeout(()=>{
   console.log(`Executed for ${(endTime - startTime) / 1000} seconds.`);
   console.log(`Produced ${alice.lastConfirmedBlock.chainLength} blocks.`);
   process.exit(0);
-}, 10000);
+}, 12000);

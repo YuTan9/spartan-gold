@@ -72,11 +72,32 @@ module.exports = class FakeNet {
    * @param {String} msg - the name of the event being broadcasted (e.g. "PROOF_FOUND")
    * @param {Object} o - payload of the message
    */
+  // broadcast(msg, o) {
+  //   for (let address of this.clients.keys()) {
+  //     // console.log(address);
+  //     this.sendMessage(address, msg, o);
+  //   }
+  // }
   broadcast(msg, o) {
-    for (let address of this.clients.keys()) {
-      // console.log(address);
-      this.sendMessage(address, msg, o);
-    }
+    if (typeof o !== 'object') throw new Error(`Expecting an object, but got a ${typeof o}`);
+    let o2 = Object.assign({}, o);
+    let sent = [];
+    this.clients.forEach((client, address) => {
+      if(!sent.includes(client)){
+        let delay = Math.floor(Math.random() * this.messageDelayMax);
+        if (Math.random() > this.chanceMessageFails) {
+          setTimeout(() => {
+            try {
+              client.emit(msg, o2);
+            } catch (error) {
+              throw new Error(`broadcast message fail when trying to send ${msg} to ${client.name}`);
+            }
+          }, delay);
+          
+        }
+        sent.push(client);
+      }
+    });
   }
 
   /**
@@ -107,9 +128,8 @@ module.exports = class FakeNet {
         try {
           client.emit(msg, o2);
         } catch (error) {
-          console.log(this.clients.keys());
           console.log(address);
-          throw new Error('send message fail');
+          throw new Error(`send message fail when trying to send ${msg} to ${address}`);
         }
       }, delay);
       
