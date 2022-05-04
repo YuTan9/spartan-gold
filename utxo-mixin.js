@@ -164,12 +164,12 @@ module.exports = {
   },
   cleanWallet: function(debug = false){
     let i = this.wallet.length;
-    if(debug){this.log('Cleaning wallet');}
+    // if(debug){this.log('Cleaning wallet');}
     while(i--){
       if(this.lastConfirmedBlock.balanceOf(this.wallet[i].address) === 0){
         if(debug){
-          console.log(`deleting address ${this.wallet[i].address}`);
-          console.log(`         amount:${this.lastConfirmedBlock.balanceOf(this.wallet[i].address)}`);
+          // console.log(`deleting address ${this.wallet[i].address}`);
+          // console.log(`         amount:${this.lastConfirmedBlock.balanceOf(this.wallet[i].address)}`);
         }
         this.wallet.splice(i, 1);
       }

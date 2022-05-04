@@ -66,24 +66,24 @@ module.exports = class Miner extends Client {
     let num_blocks = this.currentBlock.chainLength - lastUpdated.chainLength - 1;
     if (num_blocks*2 < Blockchain.BLOCKS_BETWEEN_UPDATES){
       let current_difficulty = Blockchain.cfg.powLeadingZeroes;
-      this.log(`decrease difficulty from ${current_difficulty}`);
+      let diff_holder = current_difficulty;
       while(num_blocks < Blockchain.BLOCKS_BETWEEN_UPDATES && current_difficulty > 0){
         current_difficulty -= 1;
         num_blocks *= 2;
       }
-      this.log(`to ${current_difficulty}`);
+      this.log(`\x1b[31mDecreased difficulty from ${diff_holder} to ${current_difficulty}\x1b[0m`);
       Blockchain.updateDifficulty(current_difficulty, now);
-    }else if(num_blocks > Blockchain.BLOCKS_BETWEEN_UPDATES){
+    }else if(num_blocks/2 > Blockchain.BLOCKS_BETWEEN_UPDATES){
       let current_difficulty = Blockchain.cfg.powLeadingZeroes;
-      this.log(`increase difficulty from ${current_difficulty}`);
+      let diff_holder = current_difficulty;
       while(num_blocks/2 > Blockchain.BLOCKS_BETWEEN_UPDATES && current_difficulty < 64 * 4){
         current_difficulty += 1;
         num_blocks /= 2;
       }
-      this.log(`to ${current_difficulty}`);
+      this.log(`\x1b[31mIncreased difficulty from ${diff_holder} to ${current_difficulty}\x1b[0m`);
       Blockchain.updateDifficulty(current_difficulty, now);
     }else{
-      console.log("No difficulty update required!");
+      this.log("\x1b[33mNo difficulty update required!\x1b[0m");
     }
   }
 
@@ -141,13 +141,12 @@ module.exports = class Miner extends Client {
       tmpBlock.addTransaction(tx, this);
     });
     if(utils.approxSize(tmpBlock) > Blockchain.BLOCKSIZE){
-      this.log('+---------------------+');
-      this.log('| \x1b[32mBLOCKSIZE exceeded.\x1b[0m |');
-      this.log('+---------------------+');
-      if(!!tmpBlock.data){
-        this.log('Exceed coz too many data');
+      if(this.transactions.size > 0){
+        this.log('+---------------------+');
+        this.log('| \x1b[32mBLOCKSIZE exceeded.\x1b[0m |');
+        this.log('+---------------------+');
+        this.log(`\tTransactions: ${this.transactions.size}`);
       }
-      this.log(`\tTransactions: ${this.transactions.size}`);
       let sortedTrx= [];
       this.transactions.forEach((tx)=>{
         let i = 0;
@@ -165,7 +164,9 @@ module.exports = class Miner extends Client {
         tmpBlock.addTransaction(sortedTrx[counter], this);
         counter ++;
       }
-      this.log(`\tSplit at ${counter}`);
+      if(this.transactions.size > 0){
+        this.log(`\tSplit at ${counter}`);
+      }
       let inLaterBlocks = sortedTrx.slice(counter);
       this.currentBlock = Blockchain.makeBlock(this.address, this.lastBlock);
       sortedTrx.slice(0, counter).forEach(tx=>{
@@ -174,7 +175,9 @@ module.exports = class Miner extends Client {
       });
       this.transactions.clear();
       inLaterBlocks.forEach((tx) => this.transactions.add(tx));
-      this.log(`\tthis.transactions.size: ${this.transactions.size}`);
+      if(this.transactions.size > 0){
+        this.log(`\tthis.transactions.size: ${this.transactions.size}`);
+      }
       this.currentBlock.proof = 0;
       // this.transactions.forEach(tx => console.log(tx));
       // setTimeout(this.startNewSearch(), 1000);
@@ -203,7 +206,7 @@ module.exports = class Miner extends Client {
     let pausePoint = this.currentBlock.proof + this.miningRounds;
     while (this.currentBlock.proof < pausePoint) {
       if (this.currentBlock.hasValidProof()) {
-        this.log(`found proof for block ${this.currentBlock.chainLength}: ${this.currentBlock.proof}`);
+        // this.log(`found proof for block ${this.currentBlock.chainLength}: ${this.currentBlock.proof}`);
         // console.log(`Found proof for block ${this.currentBlock.chainLength} with size ${utils.approxSize(this.currentBlock)}`);
         // console.log(this.currentBlock);
         this.announceProof();
@@ -241,7 +244,7 @@ module.exports = class Miner extends Client {
 
     // We switch over to the new chain only if it is better.
     if (this.currentBlock && b.chainLength >= this.currentBlock.chainLength) {
-      this.log(`cutting over to new chain.`);
+      // this.log(`cutting over to new chain.`);
       let txSet = this.syncTransactions(b);
       this.startNewSearch(txSet);
     }

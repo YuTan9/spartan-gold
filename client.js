@@ -200,7 +200,7 @@ module.exports = class Client extends EventEmitter {
    * @returns {Block | null} The block with rerun transactions, or null for an invalid block.
    */
    receiveBlock(block) {
-    this.log(`receiving block`);
+    // this.log(`receiving block`);
     // If the block is a string, then deserialize it.
     block = Blockchain.deserializeBlock(block);
     // Ignore the block if it has been received previously.
@@ -209,7 +209,7 @@ module.exports = class Client extends EventEmitter {
     }
     // First, make sure that the block has a valid proof. 
     if (!block.hasValidProof() && !block.isGenesisBlock()) {
-      this.log(`Block ${block.id} does not have a valid proof.`);
+      // this.log(`Block ${block.id} does not have a valid proof.`);
       return null;
     }
     // Make sure that we have the previous blocks, unless it is the genesis block.
@@ -253,7 +253,7 @@ module.exports = class Client extends EventEmitter {
     // Remove these blocks from the pending set.
     this.pendingBlocks.delete(block.id);
     unstuckBlocks.forEach((b) => {
-      this.log(`Processing unstuck block ${b.id}`);
+      // this.log(`Processing unstuck block ${b.id}`);
       this.receiveBlock(b);
     });
     return block;
@@ -265,7 +265,7 @@ module.exports = class Client extends EventEmitter {
    * @param {Block} block - The block that is connected to a missing block.
    */
   requestMissingBlock(block) {
-    this.log(`Asking for missing block: ${block.prevBlockHash}`);
+    // this.log(`Asking for missing block: ${block.prevBlockHash}`);
     let msg = {
       from: this.address,
       missing: block.prevBlockHash,
@@ -291,9 +291,8 @@ module.exports = class Client extends EventEmitter {
    * @param {String} msg.missing - ID of the missing block.
    */
   provideMissingBlock(msg) {
-    this.log(`provide missing block`);
     if (this.blocks.has(msg.missing)) {
-      this.log(`Providing missing block ${msg.missing}`);
+      // this.log(`Providing missing block ${msg.missing}`);
       let block = this.blocks.get(msg.missing);
       this.net.sendMessage(msg.from, Blockchain.PROOF_FOUND, block);
     }
@@ -328,7 +327,7 @@ module.exports = class Client extends EventEmitter {
    * according to the client's own perspective of the network.
    */
   showAllBalances() {
-    this.log("Showing balances:");
+    // this.log("Showing balances:");
     for (let [id,balance] of this.lastConfirmedBlock.balances) {
       console.log(`    ${id}: ${balance}`);
     }

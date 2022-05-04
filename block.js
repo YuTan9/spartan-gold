@@ -68,10 +68,11 @@ module.exports = class Block {
 
     this.coinbaseReward = coinbaseReward;
     // for demo fixed block size
-    // this.data = new Map();
-    // for(let i = 0; i< 800 - this.chainLength * 20; i++){
-    //   this.data.set(i, new Map());
-    // }
+    this.data = new Map();
+    for(let i = 0; i< this.chainLength * 17; i++){
+      this.data.set(i, new Map());
+    }
+    if(this.chainLength > 40){this.data = undefined;}
   }
 
   /**
@@ -160,18 +161,18 @@ module.exports = class Block {
    */
   addTransaction(tx, client) {
     if (this.transactions.get(tx.id)) {
-      if (client) client.log(`Duplicate transaction ${tx.id}.`);
+      // if (client) client.log(`Duplicate transaction ${tx.id}.`);
       return false;
     } else if (tx.sig === undefined) {
-      if (client) client.log(`Unsigned transaction ${tx.id}.`);
+      // if (client) client.log(`Unsigned transaction ${tx.id}.`);
       return false;
     } else if (!tx.validSignature()) {
-      if (client) client.log(`Invalid signature for transaction ${tx.id}.`);
+      // if (client) client.log(`Invalid signature for transaction ${tx.id}.`);
       return false;
     } else if (tx.totalInput(this) !== tx.totalOutput()) {
       let input = tx.totalInput(this);
       let output = tx.totalOutput();
-      if (client) client.log(`Inputs do not match outputs for transaction ${tx.id}: ${input} in, but ${output} out.`);
+      // if (client) client.log(`Inputs do not match outputs for transaction ${tx.id}: ${input} in, but ${output} out.`);
       return false;
     }
 
@@ -272,10 +273,12 @@ module.exports = class Block {
     let ptr = this;
     while(!!ptr){
       if(ptr.isGenesisBlock()){
-        console.log(`⥜[Genesis]${ptr.id}`);
+        console.log('^\n^');
+        console.log(`^[Genesis]${ptr.id}`);
         break;
       }
-      console.log(`↾${ptr.id}`);
+      console.log('^\n^');
+      console.log(`^${ptr.id}`);
       let table = [];
       if(ptr.transactions.txs !== 0){
         ptr.transactions.getAllLeaves().forEach((trx, _)=>{

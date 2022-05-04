@@ -1,0 +1,9 @@
+1. the broadcasr function in fakenet fails because in utxo models, new addresses are created, therefore fakenet loses track of the latest adresses.
+when new adresses are created between broadcast for loop and sendmesaage call, the for loop executes on the old address, so the send message cannot find the client.
+
+solution: maybe guid for clients 
+
+2. since in this demo code, data were added to the blocks. (data have no meanings, just to bloat the block size such that the block sizes will exceed limit on demo) also, since there are balances, which is a Map object, in blocks, when more and more UTXOs were generated, the block size also increases. when the balance map takes up too much space that the whole block would reach the block size without any transactions, no transactions can be added. in this case the posted transactions will never be put in any block, but the balance had been deducted when the client post the transaction. therefore, the balance will be negitive.
+
+solution: although irl the data field would probably not be used, the block header bloating when the UTXOs increases is a real problem.
+the function in utils.js that calculates the object size was an approximation, a more accurate function could be helpful. on the other hand, compressing UTXOs on most blocks could save space for transactions.

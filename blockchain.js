@@ -134,28 +134,23 @@ module.exports = class Blockchain {
 
   static updateDifficulty(by, ts){
     if(!Blockchain.cfg.updateTimeStamp){
-      console.log(`Current powLeadingZeroes: ${Blockchain.cfg.powLeadingZeroes}`);
-      console.log(`Updating to: ${by}`);
+      console.log(`\x1b[34m[Blockchain.cfg] Current powLeadingZeroes: ${Blockchain.cfg.powLeadingZeroes}`);
+      console.log(`[Blockchain.cfg] Updating to: ${by}`);
       Blockchain.cfg.powTarget = POW_BASE_TARGET.shiftRight(by);
       Blockchain.cfg.powLeadingZeroes = by;
       Blockchain.cfg.updateTimeStamp = ts;
-      console.log(`Upadated powLeadingZeroes: ${Blockchain.cfg.powLeadingZeroes}`);
+      console.log(`[Blockchain.cfg] Upadated powLeadingZeroes: ${Blockchain.cfg.powLeadingZeroes}\x1b[0m`);
     }else{
-      if(ts - Blockchain.cfg.updateTimeStamp < TIME_BETWEEN_UPDATES){
+      if(ts - Blockchain.cfg.updateTimeStamp < TIME_BETWEEN_UPDATES * 0.9){
         // just updated
-        console.log('+------------------------------------+');
-        console.log('| blockchain just updated difficulty |');
-        console.log('+------------------------------------+');
+        console.log('\x1b[34m[Blockchain.cfg] Just updated difficulty.\x1b[0m');
       }else{
-        console.log('+-----------------------------------------+');
-        console.log('| blockchain initialize update difficulty |');
-        console.log('+-----------------------------------------+');
-        console.log(`Current powLeadingZeroes: ${Blockchain.cfg.powLeadingZeroes}`);
-        console.log(`Updating to: ${by}`);
+        console.log(`\x1b[34m[Blockchain.cfg] Current powLeadingZeroes: ${Blockchain.cfg.powLeadingZeroes}`);
+        console.log(`[Blockchain.cfg] Updating to: ${by}`);
         Blockchain.cfg.powTarget = POW_BASE_TARGET.shiftRight(by);
         Blockchain.cfg.powLeadingZeroes = by;
         Blockchain.cfg.updateTimeStamp = ts;
-        console.log(`Upadated powLeadingZeroes: ${Blockchain.cfg.powLeadingZeroes}`);
+        console.log(`[Blockchain.cfg] Upadated powLeadingZeroes: ${Blockchain.cfg.powLeadingZeroes}\x1b[0m`);
       }
     }
     
