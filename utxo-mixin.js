@@ -59,6 +59,7 @@ module.exports = {
     let newKey = utils.generateKeypair();
     let newAddress = utils.calcAddress(newKey.public);
     this.wallet.push({address: newAddress, keyPair: newKey});
+    this.net.register(this);
     return newAddress;
   },
 

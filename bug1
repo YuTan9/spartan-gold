@@ -1,0 +1,4 @@
+the broadcasr function in fakenet fails because in utxo models, new addresses are created, therefore fakenet loses track of the latest adresses.
+when new adresses are created between broadcast for loop and senmesaage call, the for loop executes on the old address, so the send message cannot find the client.
+
+solution: maybe guid for clients 

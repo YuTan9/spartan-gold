@@ -7,9 +7,10 @@ const Client = require('./client.js');
 const Miner = require('./miner.js');
 const Transaction = require('./transaction.js');
 const utils = require('./utils.js');
-const debug = true;
+const debug = false;
 
 const Tree = require('./merkle-tree.js');
+const { EventEmitter } = require('./client.js');
 // let tree = new Tree();
 // let transactions = ['a', 'b', 'c', 'd', 'e'];
 // transactions.forEach(trx =>{
@@ -52,6 +53,9 @@ let charlie = new Client({name: "Charlie", net: fakeNet});
 let minnie = new Miner({name: "Minnie", net: fakeNet});
 let mickey = new Miner({name: "Mickey", net: fakeNet});
 if(!debug){
+  alice.log = function(){};
+  bob.log = function(){};
+  charlie.log = function(){};
   mickey.log = function(){};
   minnie.log = function(){};
 }
@@ -67,7 +71,7 @@ let genesis = Blockchain.makeGenesis({
     [mickey,  200],
   ]),
 });
-
+let startTime = genesis.timestamp;
 
 // Showing the initial balances from Alice's perspective, for no particular reason.
 // console.log("Initial balances:");
@@ -98,7 +102,6 @@ function randAddr(user){
 }
 
 let record = "";
-// Alice transfers some money to Bob.
 
 
 const interval = setInterval(() =>{
@@ -107,10 +110,10 @@ const interval = setInterval(() =>{
     try {
       alice.postTransaction([{amount: 100, address: target}]);
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: alice posted transaction of 100 to ${name}\n`;
+      record += `[${time}]: alice posted transaction of 100 to ${target}\n`;
     } catch (error) {
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: alice posted transaction of 100 to ${name}\n`;
+      record += `[${time}]: alice failed transaction of 100 to ${target}\n           ${error}\n`;
     }
   }
   if(Math.random() < 0.5){
@@ -118,10 +121,10 @@ const interval = setInterval(() =>{
     try {
       bob.postTransaction([{amount: 100, address: target}]);
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: bob posted transaction of 100 to ${name}\n`;
+      record += `[${time}]: bob posted transaction of 100 to ${target}\n`;
     } catch (error) {
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: bob failed transaction of 100 to ${name}\n`;
+      record += `[${time}]: bob failed transaction of 100 to ${target}\n           ${error}\n`;
     }
   }
   if(Math.random() < 0.5){
@@ -129,10 +132,10 @@ const interval = setInterval(() =>{
     try {
       charlie.postTransaction([{amount: 100, address: target}]);
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: charlie posted transaction of 100 to ${name}\n`;
+      record += `[${time}]: charlie posted transaction of 100 to ${target}\n`;
     } catch (error) {
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: charlie failed transaction of 100 to ${name}\n`;
+      record += `[${time}]: charlie failed transaction of 100 to ${target}\n           ${error}\n`;
     }
   }
   if(Math.random() < 0.5){
@@ -140,10 +143,10 @@ const interval = setInterval(() =>{
     try {
       mickey.postTransaction([{amount: 100, address: target}]);
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: mickey posted transaction of 100 to ${name}\n`;
+      record += `[${time}]: mickey posted transaction of 100 to ${target}\n`;
     } catch (error) {
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: mickey failed transaction of 100 to ${name}\n`;
+      record += `[${time}]: mickey failed transaction of 100 to ${target}\n           ${error}\n`;
     }
   }
   if(Math.random() < 0.5){
@@ -151,22 +154,33 @@ const interval = setInterval(() =>{
     try {
       minnie.postTransaction([{amount: 100, address: target}]);
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: minnie posted transaction of 100 to ${name}\n`;
+      record += `[${time}]: minnie posted transaction of 100 to ${target}\n`;
     } catch (error) {
       let time = new Date().toLocaleTimeString();
-      record += `[${time}]: minnie failed transaction of 100 to ${name}\n`;
+      record += `[${time}]: minnie failed transaction of 100 to ${target}\n           ${error}\n`;
     }
   }
 }, 1000);
 
-
+// Stop posting trx, set some time for the transactions to go thru
+// or else some trx would be in progress causing the final balance outputing negitive values 
+// (transaction posted, therefore balance was deducted, but the change was still pending)
 setTimeout(() => {
   clearInterval(interval);
 }, 6000);
 
 setTimeout(()=>{
+  alice.lastConfirmedBlock.printBlockChain([alice, bob, charlie, mickey, minnie]);
   fakeNet.clients.forEach(client =>{client.cleanWallet(debug);});
-  showBalances();
+  // showBalances();
+  console.log(`Alice's balance is ${alice.availableGold}.`);
+  console.log(`Bob's balance is ${bob.availableGold}.`);
+  console.log(`Charlie's balance is ${charlie.availableGold}.`);
+  console.log(`Minnie's balance is ${minnie.availableGold}.`);
+  console.log(`Mickey's balance is ${mickey.availableGold}.`);
   console.log(record);
+  let endTime = alice.lastConfirmedBlock.timestamp;
+  console.log(`Executed for ${(endTime - startTime) / 1000} seconds.`);
+  console.log(`Produced ${alice.lastConfirmedBlock.chainLength} blocks.`);
   process.exit(0);
-}, 10000);
+}, 12000);
