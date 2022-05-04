@@ -141,9 +141,13 @@ module.exports = class Miner extends Client {
       tmpBlock.addTransaction(tx, this);
     });
     if(utils.approxSize(tmpBlock) > Blockchain.BLOCKSIZE){
-      this.log('BLOCKSIZE exceeded.');
+      this.log('+---------------------+');
+      this.log('| \x1b[32mBLOCKSIZE exceeded.\x1b[0m |');
+      this.log('+---------------------+');
+      if(!!tmpBlock.data){
+        this.log('Exceed coz too many data');
+      }
       this.log(`\tTransactions: ${this.transactions.size}`);
-      tmpBlock.transactions = new MerkleTree();
       let sortedTrx= [];
       this.transactions.forEach((tx)=>{
         let i = 0;
@@ -156,11 +160,12 @@ module.exports = class Miner extends Client {
         sortedTrx.splice(i, 0, tx);
       });
       let counter = 0;
+      tmpBlock = Blockchain.makeBlock(this.address, this.lastBlock);
       while(utils.approxSize(tmpBlock) < Blockchain.BLOCKSIZE && counter < sortedTrx.length){
         tmpBlock.addTransaction(sortedTrx[counter], this);
         counter ++;
       }
-      this.log(`\tSplit at ${counter}\n`);
+      this.log(`\tSplit at ${counter}`);
       let inLaterBlocks = sortedTrx.slice(counter);
       this.currentBlock = Blockchain.makeBlock(this.address, this.lastBlock);
       sortedTrx.slice(0, counter).forEach(tx=>{

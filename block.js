@@ -67,6 +67,11 @@ module.exports = class Block {
     this.rewardAddr = rewardAddr;
 
     this.coinbaseReward = coinbaseReward;
+    // for demo fixed block size
+    // this.data = new Map();
+    // for(let i = 0; i< 800 - this.chainLength * 20; i++){
+    //   this.data.set(i, new Map());
+    // }
   }
 
   /**
@@ -281,6 +286,12 @@ module.exports = class Block {
         console.log("Transactions:");
         console.table(table);
       }
+      // table = [];
+      // ptr.balances.forEach((amount, addr)=>{
+      //   table.push({address:addr, amount: amount});
+      // });
+      // console.log("Balance:");
+      // console.table(table);
       ptr = clients[0].blocks.get(ptr.prevBlockHash);
     }
   }

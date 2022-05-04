@@ -67,7 +67,19 @@ setTimeout(() => {
     client_balance[1] += 100;
   } catch (error) {
     let time = new Date().toLocaleTimeString();
-    record += `[${time}]: Alice \x1b[32mfailed\x1b[0mtransaction of 100 to ${name}\n           ${error}\n`;
+    record += `[${time}]: Alice \x1b[32mfailed\x1b[0m transaction of 100 to ${name}\n           ${error}\n`;
+  }
+  target = alice;
+  name = target.name;
+  addr = target.createAddress();
+  try {
+    minnie.postTransaction([{amount: 100, address: addr}]);
+    let time = new Date().toLocaleTimeString();
+    record += `[${time}]: Minnie \x1b[32mposted\x1b[0m transaction of 100 to ${name}\n`;
+    client_balance[0] += 100;
+  } catch (error) {
+    let time = new Date().toLocaleTimeString();
+    record += `[${time}]: Minnie \x1b[32mfailed\x1b[0m transaction of 100 to ${name}\n           ${error}\n`;
   }
 }, 1000);
 
@@ -78,12 +90,12 @@ setTimeout(() => {
   try {
     bob.postTransaction([{amount: 100, address: addr}]);
     let time = new Date().toLocaleTimeString();
-    record += `[${time}]: Bob \x1b[32mposted\x1b[0mtransaction of 100 to ${name}\n`;
+    record += `[${time}]: Bob \x1b[32mposted\x1b[0m transaction of 100 to ${name}\n`;
     client_balance[1] -= 101;
     client_balance[2] += 100;
   } catch (error) {
     let time = new Date().toLocaleTimeString();
-    record += `[${time}]: Bob \x1b[32mfailed\x1b[0mtransaction of 100 to ${name}\n           ${error}\n`;
+    record += `[${time}]: Bob \x1b[32mfailed\x1b[0m transaction of 100 to ${name}\n           ${error}\n`;
   }
 }, 3000);
 
@@ -94,11 +106,11 @@ setTimeout(() => {
   try {
     charlie.postTransaction([{amount: 100, address: addr}]);
     let time = new Date().toLocaleTimeString();
-    record += `[${time}]: Charlie \x1b[32mposted\x1b[0mtransaction of 100 to ${name}\n`;
+    record += `[${time}]: Charlie \x1b[32mposted\x1b[0m transaction of 100 to ${name}\n`;
     client_balance[2] -= 101;
   } catch (error) {
     let time = new Date().toLocaleTimeString();
-    record += `[${time}]: Charlie \x1b[32mfailed\x1b[0mtransaction of 100 to ${name}\n           ${error}\n`;
+    record += `[${time}]: Charlie \x1b[32mfailed\x1b[0m transaction of 100 to ${name}\n           ${error}\n`;
   }
   target = minnie;
   name = target.name;
@@ -106,10 +118,10 @@ setTimeout(() => {
   try {
     mickey.postTransaction([{amount: 100, address: addr}]);
     let time = new Date().toLocaleTimeString();
-    record += `[${time}]: Mickey \x1b[32mposted\x1b[0mtransaction of 100 to ${name}\n`;
+    record += `[${time}]: Mickey \x1b[32mposted\x1b[0m transaction of 100 to ${name}\n`;
   } catch (error) {
     let time = new Date().toLocaleTimeString();
-    record += `[${time}]: Mickey \x1b[32mfailed\x1b[0mtransaction of 100 to ${name}\n           ${error}\n`;
+    record += `[${time}]: Mickey \x1b[32mfailed\x1b[0m transaction of 100 to ${name}\n           ${error}\n`;
   }
 }, 5000);
 
@@ -120,11 +132,11 @@ setTimeout(() => {
   try {
     minnie.postTransaction([{amount: 100, address: addr}]);
     let time = new Date().toLocaleTimeString();
-    record += `[${time}]: Minnie \x1b[32mposted\x1b[0mtransaction of 100 to ${name}\n`;
+    record += `[${time}]: Minnie \x1b[32mposted\x1b[0m transaction of 100 to ${name}\n`;
     client_balance[0] += 100;
   } catch (error) {
     let time = new Date().toLocaleTimeString();
-    record += `[${time}]: Minnie \x1b[32mfailed\x1b[0mtransaction of 100 to ${name}\n           ${error}\n`;
+    record += `[${time}]: Minnie \x1b[32mfailed\x1b[0m transaction of 100 to ${name}\n           ${error}\n`;
   }
 }, 7000);
 
@@ -133,7 +145,7 @@ setTimeout(()=>{
   alice.lastConfirmedBlock.printBlockChain([alice, bob, charlie, mickey, minnie]);
   fakeNet.clients.forEach(client =>{client.cleanWallet(debug);});
   console.log();
-  console.log(`Alice's balance is ${alice.availableGold}. (${alice.availableGold === client_balance[0]? '\x1b[32mmatches\x1b[0m': '\x1b[32mposted\x1b[0m'} with the expected balance ${client_balance[0]})`);
+  console.log(`Alice's balance is ${alice.availableGold}. (${alice.availableGold === client_balance[0]? '\x1b[32mmatches\x1b[0m': '\x1b[31mdiffered\x1b[0m'} with the expected balance ${client_balance[0]})`);
   console.log(`Bob's balance is ${bob.availableGold}. (${bob.availableGold === client_balance[1]? '\x1b[32mmatches\x1b[0m': '\x1b[31mdiffers\x1b[0m'} with the expected balance ${client_balance[1]})`);
   console.log(`Charlie's balance is ${charlie.availableGold}. (${charlie.availableGold === client_balance[2]? '\x1b[32mmatches\x1b[0m': '\x1b[31mdiffers\x1b[0m'} with the expected balance ${client_balance[2]})`);
   console.log(`Minnie's balance is ${minnie.availableGold}.`);
