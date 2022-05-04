@@ -101,6 +101,17 @@ module.exports = class Miner extends Client {
     return this.getConfirmedBalance();
   }
 
+
+  /**
+   * Returns false if transaction is not accepted. Otherwise stores
+   * the transaction to be added to the next block.
+   * 
+   * @param {Transaction | String} tx - The transaction to add.
+   */
+   addTransaction(tx) {
+    tx = Blockchain.makeTransaction(tx);
+    this.transactions.add(tx);
+  }
   
   /**
    * Sets up the miner to start searching for a new block.
@@ -111,6 +122,7 @@ module.exports = class Miner extends Client {
     if(this.lastBlock.rewardAddr === this.address){ 
       let old_addr = this.address;
       this.address = this.createAddress();
+      this.net.updateClientAddress(old_addr, this);
     }else if(this.lastBlock.balances.get(this.address) || 0 > 0){
       let old_addr = this.address;
       this.address = this.createAddress();
@@ -129,7 +141,8 @@ module.exports = class Miner extends Client {
       tmpBlock.addTransaction(tx, this);
     });
     if(utils.approxSize(tmpBlock) > Blockchain.BLOCKSIZE){
-      if(this.debug){console.log('BLOCKSIZE exceeded.');}
+      this.log('BLOCKSIZE exceeded.');
+      this.log(`\tTransactions: ${this.transactions.size}`);
       tmpBlock.transactions = new MerkleTree();
       let sortedTrx= [];
       this.transactions.forEach((tx)=>{
@@ -147,13 +160,16 @@ module.exports = class Miner extends Client {
         tmpBlock.addTransaction(sortedTrx[counter], this);
         counter ++;
       }
+      this.log(`\tSplit at ${counter}\n`);
       let inLaterBlocks = sortedTrx.slice(counter);
       this.currentBlock = Blockchain.makeBlock(this.address, this.lastBlock);
       sortedTrx.slice(0, counter).forEach(tx=>{
         this.currentBlock.addTransaction(tx, this);
+        this.log(`\tOne transaction added to main block`);
       });
       this.transactions.clear();
-      inLaterBlocks.forEach((tx) => this.addTransaction(tx));
+      inLaterBlocks.forEach((tx) => this.transactions.add(tx));
+      this.log(`\tthis.transactions.size: ${this.transactions.size}`);
       this.currentBlock.proof = 0;
       // this.transactions.forEach(tx => console.log(tx));
       // setTimeout(this.startNewSearch(), 1000);
@@ -265,17 +281,6 @@ module.exports = class Miner extends Client {
     nbTxs.forEach((tx) => cbTxs.delete(tx));
 
     return cbTxs;
-  }
-
-  /**
-   * Returns false if transaction is not accepted. Otherwise stores
-   * the transaction to be added to the next block.
-   * 
-   * @param {Transaction | String} tx - The transaction to add.
-   */
-  addTransaction(tx) {
-    tx = Blockchain.makeTransaction(tx);
-    this.transactions.add(tx);
   }
 
   /**

@@ -28,7 +28,7 @@ const DEFAULT_TX_FEE = 1;
 const CONFIRMED_DEPTH = 6;
 
 // const BLOCKSIZE = 2 ** 15;
-const BLOCKSIZE = 2 ** 20;
+const BLOCKSIZE = 2 ** 14;
 // the block size is set to 1 Mb
 // Although the balances (UTXO) in blocks take much space, combining the adresses and / or spending those balances are expected
 // And by those two actions, the space taken by balances would then be reduced to make space for storing transactions.

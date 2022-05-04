@@ -267,10 +267,10 @@ module.exports = class Block {
     let ptr = this;
     while(!!ptr){
       if(ptr.isGenesisBlock()){
-        console.log(`[Genesis]${ptr.id}`);
+        console.log(`⥜[Genesis]${ptr.id}`);
         break;
       }
-      console.log(ptr.id);
+      console.log(`↾${ptr.id}`);
       let table = [];
       if(ptr.transactions.txs !== 0){
         ptr.transactions.getAllLeaves().forEach((trx, _)=>{

@@ -14,10 +14,10 @@ let UtxoMixin = require('./utxo-mixin.js');
  */
 module.exports = class Client extends EventEmitter {
 
-  emit(msg, o){
-    this.log(`emitting ${msg}`);
-    super.emit(msg, o);
-  }
+  // emit(msg, o){
+  //   this.log(`emitting ${msg}`);
+  //   super.emit(msg, o);
+  // }
   /**
    * The net object determines how the client communicates
    * with other entities in the system. (This approach allows us to
@@ -343,7 +343,7 @@ module.exports = class Client extends EventEmitter {
    */
   log(msg) {
     let name = this.name || this.address.substring(0,10);
-    console.log(`${name}[${new Date().toLocaleTimeString()}]: ${msg}`);
+    console.log(`[${new Date().toLocaleTimeString()}]${name}: ${msg}`);
   }
 
   /**
