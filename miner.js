@@ -119,15 +119,15 @@ module.exports = class Miner extends Client {
    * @param {Set} [txSet] - Transactions the miner has that have not been accepted yet.
    */
   startNewSearch(txSet=new Set()) {
-    if(this.lastBlock.rewardAddr === this.address){ 
-      let old_addr = this.address;
-      this.address = this.createAddress();
-      this.net.updateClientAddress(old_addr, this);
-    }else if(this.lastBlock.balances.get(this.address) || 0 > 0){
-      let old_addr = this.address;
-      this.address = this.createAddress();
-      this.net.updateClientAddress(old_addr, this);
-    }
+    // if(this.lastBlock.rewardAddr === this.address){ 
+    //   let old_addr = this.address;
+    //   this.address = this.createAddress();
+    //   this.net.updateClientAddress(old_addr, this);
+    // }else if(this.lastBlock.balances.get(this.address) || 0 > 0){
+    //   let old_addr = this.address;
+    //   this.address = this.createAddress();
+    //   this.net.updateClientAddress(old_addr, this);
+    // }
     
     let tmpBlock = Blockchain.makeBlock(this.address, this.lastBlock);
 

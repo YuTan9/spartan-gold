@@ -1,6 +1,6 @@
 "use strict";
 
-const { useProxy } = require("chai/lib/chai/config");
+// const { useProxy } = require("chai/lib/chai/config");
 let Blockchain = require("./blockchain");
 
 /**

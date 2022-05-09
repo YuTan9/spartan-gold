@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/taustin/spartan-gold#readme",
   "dependencies": {
-    "chai": "^4.2.0",
+    "chai": "^4.3.6",
     "jsbn": "^1.1.0",
     "just-clone": "^5.0.1",
     "mocha": "^5.2.0",

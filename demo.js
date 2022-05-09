@@ -67,7 +67,7 @@ setTimeout(() => {
     client_balance[1] += 100;
   } catch (error) {
     let time = new Date().toLocaleTimeString();
-    record += `[${time}]: Alice \x1b[32mfailed\x1b[0m transaction of 100 to ${name}\n           ${error}\n`;
+    record += `[${time}]: Alice \x1b[31mfailed\x1b[0m transaction of 100 to ${name}\n           ${error}\n`;
   }
   target = alice;
   name = target.name;
@@ -79,7 +79,7 @@ setTimeout(() => {
     client_balance[0] += 100;
   } catch (error) {
     let time = new Date().toLocaleTimeString();
-    record += `[${time}]: Minnie \x1b[32mfailed\x1b[0m transaction of 100 to ${name}\n           ${error}\n`;
+    record += `[${time}]: Minnie \x1b[31mfailed\x1b[0m transaction of 100 to ${name}\n           ${error}\n`;
   }
 }, 1000);
 
@@ -95,9 +95,9 @@ setTimeout(() => {
     client_balance[2] += 100;
   } catch (error) {
     let time = new Date().toLocaleTimeString();
-    record += `[${time}]: Bob \x1b[32mfailed\x1b[0m transaction of 100 to ${name}\n           ${error}\n`;
+    record += `[${time}]: Bob \x1b[31mfailed\x1b[0m transaction of 100 to ${name}\n           ${error}\n`;
   }
-}, 3000);
+}, 4000);
 
 setTimeout(() => {
   let target = mickey;
@@ -110,7 +110,7 @@ setTimeout(() => {
     client_balance[2] -= 101;
   } catch (error) {
     let time = new Date().toLocaleTimeString();
-    record += `[${time}]: Charlie \x1b[32mfailed\x1b[0m transaction of 100 to ${name}\n           ${error}\n`;
+    record += `[${time}]: Charlie \x1b[31mfailed\x1b[0m transaction of 100 to ${name}\n           ${error}\n`;
   }
   target = minnie;
   name = target.name;
@@ -121,9 +121,9 @@ setTimeout(() => {
     record += `[${time}]: Mickey \x1b[32mposted\x1b[0m transaction of 100 to ${name}\n`;
   } catch (error) {
     let time = new Date().toLocaleTimeString();
-    record += `[${time}]: Mickey \x1b[32mfailed\x1b[0m transaction of 100 to ${name}\n           ${error}\n`;
+    record += `[${time}]: Mickey \x1b[31mfailed\x1b[0m transaction of 100 to ${name}\n           ${error}\n`;
   }
-}, 5000);
+}, 7000);
 
 setTimeout(() => {
   let target = alice;
@@ -136,9 +136,9 @@ setTimeout(() => {
     client_balance[0] += 100;
   } catch (error) {
     let time = new Date().toLocaleTimeString();
-    record += `[${time}]: Minnie \x1b[32mfailed\x1b[0m transaction of 100 to ${name}\n           ${error}\n`;
+    record += `[${time}]: Minnie \x1b[31mfailed\x1b[0m transaction of 100 to ${name}\n           ${error}\n`;
   }
-}, 7000);
+}, 10000);
 
 
 setTimeout(()=>{

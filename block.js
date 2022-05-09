@@ -68,11 +68,7 @@ module.exports = class Block {
 
     this.coinbaseReward = coinbaseReward;
     // for demo fixed block size
-    this.data = new Map();
-    for(let i = 0; i< this.chainLength * 17; i++){
-      this.data.set(i, new Map());
-    }
-    if(this.chainLength > 40){this.data = undefined;}
+    
   }
 
   /**
