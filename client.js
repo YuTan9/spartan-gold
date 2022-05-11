@@ -71,7 +71,7 @@ module.exports = class Client extends EventEmitter {
     // Setting up listeners to receive messages from other clients.
     this.on(Blockchain.PROOF_FOUND, this.receiveBlock);
     this.on(Blockchain.MISSING_BLOCK, this.provideMissingBlock);
-    
+    // this.on(Blockchain.IDENTIFY_YOURSELF, this.proveIdentity);
     Object.assign(this, UtxoMixin);
     
     this.setupWallet();
@@ -99,7 +99,13 @@ module.exports = class Client extends EventEmitter {
 
     this.blocks.set(startingBlock.id, startingBlock);
   }
-
+  // proveIdentity(o){
+  //   this.wallet.forEach(({ address }) => {
+  //     if(address === o.address){
+  //       this.net.
+  //     }
+  //   });
+  // }
   /**
    * The amount of gold available to the client, not counting any pending
    * transactions.  This getter looks at the last confirmed block, since
@@ -235,6 +241,47 @@ module.exports = class Client extends EventEmitter {
         return null;
       }
     }
+
+    let accepted_trx = [];
+    let ptr = this.lastConfirmedBlock;
+    while(!!ptr){
+      if(ptr.isGenesisBlock()){
+        break;
+      }
+      if(ptr.transactions.txs !== 0){
+        ptr.transactions.getAllLeaves().forEach((trx, _)=>{
+          // if(accepted_trx.includes(trx.id)){
+          //   this.log(`\x1b[31mDuplicate trx on my blockchain\x1b[0m`);
+          // }else{
+          //   accepted_trx.push(trx.id);
+          // }
+          accepted_trx.push(trx.id);
+        });
+      }
+      ptr = this.blocks.get(ptr.prevBlockHash);
+    }
+    this.blocks.forEach((b, _)=>{
+      if(b.transactions.txs > 0){
+        b.transactions.getAllLeaves().forEach((trx, _)=>{
+          // if(accepted_trx.includes(trx.id)){
+          //   this.log(`\x1b[31mHave seen this transaction\x1b[0m`);
+          // }else{
+          //   accepted_trx.push(trx.id);
+          // }
+          if(!accepted_trx.includes(trx.id)){
+            accepted_trx.push(trx.id);
+          }
+        })
+      }
+    });
+
+    block.transactions.getAllLeaves().forEach((trx, _)=>{
+      if(accepted_trx.includes(trx.id)){
+        // this.log(`\x1b[31mNew block has duplicate transaction\x1b[0m`);
+        return null;
+      }
+    });
+
     // Storing the block.
     this.blocks.set(block.id, block);
     

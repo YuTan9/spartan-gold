@@ -245,9 +245,12 @@ module.exports = class Block {
    */
   totalRewards() {
     let r = this.coinbaseReward;
-    for(let tx of this.transactions.getAllLeaves()){
+    // for(let tx of this.transactions.getAllLeaves()){
+    //   r += tx.fee;
+    // }
+    this.transactions.getAllLeaves().forEach(tx=>{
       r += tx.fee;
-    }
+    });
     return r;
   }
 
@@ -273,15 +276,18 @@ module.exports = class Block {
         console.log(`^[Genesis]${ptr.id}`);
         break;
       }
-      console.log('^\n^');
-      console.log(`^${ptr.id}`);
-      let table = [];
       if(ptr.transactions.txs !== 0){
+        console.log('^\n^');
+        console.log(`^${ptr.id}`);
+        let table = [];
         ptr.transactions.getAllLeaves().forEach((trx, _)=>{
           trx.outputs.forEach(({amount, address}) =>{
             table.push({trx: trx.id.slice(0, 8), from: trx.from[0], amount: amount, to: address});
           });
         });
+        console.log("Timestamp:");
+        let d = new Date(ptr.timestamp);
+        console.log(d.toString());
         console.log("Transactions:");
         console.table(table);
       }

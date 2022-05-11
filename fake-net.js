@@ -63,7 +63,7 @@ module.exports = class FakeNet {
   updateClientAddress(oldAddress, client){
     // console.log('update address');
     // console.log(`from ${oldAddress} to ${client.address}`);
-    this.clients.delete(oldAddress);
+    // this.clients.delete(oldAddress);
     this.register(client);
   }
   /**
@@ -90,7 +90,8 @@ module.exports = class FakeNet {
             try {
               client.emit(msg, o2);
             } catch (error) {
-              throw new Error(`broadcast message fail when trying to send ${msg} to ${client.name}`);
+              console.log("\x1b[31mBROADCAST FAIL\x1b[0m");
+              setTimeout(()=> this.broadcast(msg, o), 10);
             }
           }, delay);
           
@@ -128,8 +129,8 @@ module.exports = class FakeNet {
         try {
           client.emit(msg, o2);
         } catch (error) {
-          console.log(address);
-          throw new Error(`send message fail when trying to send ${msg} to ${address}`);
+          console.log("\x1b[31mSEND FAIL\x1b[0m");
+          setTimeout(()=> this.sendMessage(address, msg, o), 10);
         }
       }, delay);
       

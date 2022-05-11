@@ -10,13 +10,14 @@ const POST_TRANSACTION = "POST_TRANSACTION";
 const PROOF_FOUND = "PROOF_FOUND";
 const START_MINING = "START_MINING";
 const UPDATE_DIFFICULTY = "UPDATE_DIFFICULTY";
+const IDENTIFY_YOURSELF = "IDENTIFY_YOURSELF";
 
 // Constants for mining
 const NUM_ROUNDS_MINING = 2000;
 
 // Constants related to proof-of-work target
 const POW_BASE_TARGET = new BigInteger("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 16);
-const POW_LEADING_ZEROES = 15;
+const POW_LEADING_ZEROES = 16;
 
 // Constants for mining rewards and default transaction fees
 const COINBASE_AMT_ALLOWED = 25;
@@ -36,8 +37,8 @@ const BLOCKSIZE = 2 ** 20;
 // const DIFFICULTY_UPDATE_FREQUENCY = 100;  // update pow target per 100 block
 // const TIME_BETWEEN_UPDATES = 10 * 60 * 1000;       // 100 BLOCKS_BETWEEN_UPDATES should be produced every 10 minutes
 // const BLOCKS_BETWEEN_UPDATES = 100;
-const TIME_BETWEEN_UPDATES = 1000 * 3;
-const BLOCKS_BETWEEN_UPDATES = 10;
+const TIME_BETWEEN_UPDATES = 1000 * 4;
+const BLOCKS_BETWEEN_UPDATES = 15;
 /**
  * The Blockchain class tracks configuration information and settings for the blockchain,
  * as well as some utility methods to allow for easy extensibility.
@@ -59,6 +60,7 @@ module.exports = class Blockchain {
   // static get DIFFICULTY_UPDATE_FREQUENCY() { return DIFFICULTY_UPDATE_FREQUENCY; }
   static get TIME_BETWEEN_UPDATES() { return TIME_BETWEEN_UPDATES; }
   static get BLOCKS_BETWEEN_UPDATES() { return BLOCKS_BETWEEN_UPDATES; }
+  static get IDENTIFY_YOURSELF() {return IDENTIFY_YOURSELF;}
 
   static get powLeadingZeroes(){ return Blockchain.cfg.powLeadingZeroes; }
   static get BLOCKSIZE(){return BLOCKSIZE;}

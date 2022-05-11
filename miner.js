@@ -67,7 +67,7 @@ module.exports = class Miner extends Client {
     if (num_blocks*2 < Blockchain.BLOCKS_BETWEEN_UPDATES){
       let current_difficulty = Blockchain.cfg.powLeadingZeroes;
       let diff_holder = current_difficulty;
-      while(num_blocks < Blockchain.BLOCKS_BETWEEN_UPDATES && current_difficulty > 0){
+      while(num_blocks < Blockchain.BLOCKS_BETWEEN_UPDATES && diff_holder - current_difficulty < 5){
         current_difficulty -= 1;
         num_blocks *= 2;
       }
@@ -76,7 +76,7 @@ module.exports = class Miner extends Client {
     }else if(num_blocks/2 > Blockchain.BLOCKS_BETWEEN_UPDATES){
       let current_difficulty = Blockchain.cfg.powLeadingZeroes;
       let diff_holder = current_difficulty;
-      while(num_blocks/2 > Blockchain.BLOCKS_BETWEEN_UPDATES && current_difficulty < 64 * 4){
+      while(num_blocks/2 > Blockchain.BLOCKS_BETWEEN_UPDATES && current_difficulty - diff_holder < 5){
         current_difficulty += 1;
         num_blocks /= 2;
       }
@@ -119,15 +119,17 @@ module.exports = class Miner extends Client {
    * @param {Set} [txSet] - Transactions the miner has that have not been accepted yet.
    */
   startNewSearch(txSet=new Set()) {
-    // if(this.lastBlock.rewardAddr === this.address){ 
-    //   let old_addr = this.address;
-    //   this.address = this.createAddress();
-    //   this.net.updateClientAddress(old_addr, this);
-    // }else if(this.lastBlock.balances.get(this.address) || 0 > 0){
-    //   let old_addr = this.address;
-    //   this.address = this.createAddress();
-    //   this.net.updateClientAddress(old_addr, this);
-    // }
+    if(this.lastBlock.rewardAddr === this.address){ 
+      let old_addr = this.address;
+      this.address = this.createAddress();
+      // this.net.updateClientAddress(old_addr, this);
+      this.net.register(this);
+    }else if(this.lastBlock.balances.get(this.address) || 0 > 0){
+      let old_addr = this.address;
+      this.address = this.createAddress();
+      // this.net.updateClientAddress(old_addr, this);
+      this.net.register(this);
+    }
     
     let tmpBlock = Blockchain.makeBlock(this.address, this.lastBlock);
 
@@ -227,6 +229,16 @@ module.exports = class Miner extends Client {
    * Broadcast the block, with a valid proof included.
    */
   announceProof() {
+    if(this.currentBlock.transactions.txs > 0){
+      let table = [];
+      this.currentBlock.transactions.getAllLeaves().forEach((trx, _)=>{
+        trx.outputs.forEach(({amount, address}) =>{
+          table.push({trx: trx.id.slice(0, 8), from: trx.from[0], amount: amount, to: address});
+        });
+      });
+      this.log("Found proof for:");
+      console.table(table);
+    }
     this.net.broadcast(Blockchain.PROOF_FOUND, this.currentBlock);
   }
 
